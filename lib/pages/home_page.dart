@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/settings.dart';
+import 'package:untitled/pages/browser/t_browser_alt.dart';
+import 'package:untitled/pages/settings/settings.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
 import 'package:untitled/utils/utils.dart';
 import 'package:window_size/window_size.dart';
@@ -71,6 +72,13 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.music_note,
                       ),
                       MyRadioListTile(
+                        value: AppTab.browser,
+                        groupValue: _value,
+                        onChanged: (value) => setState(() => _value = value!),
+                        title: "Browser",
+                        icon: Icons.web,
+                      ),
+                      MyRadioListTile(
                         value: AppTab.timer,
                         groupValue: _value,
                         onChanged: (value) => setState(() => _value = value!),
@@ -92,16 +100,23 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Expanded(
-              child: _value == AppTab.lyrics
-                  ? LyricsTab(utils: utils)
-                  : _value == AppTab.settings
-                      ? SettingsPage()
-                      : TimerTab(),
-            ),
+            Expanded(child: Builder(builder: (context) {
+              if (_value == AppTab.lyrics) {
+                return LyricsTab(utils: utils);
+              }
+
+              if (_value == AppTab.settings) {
+                return SettingsPage();
+              }
+              if (_value == AppTab.browser) {
+                return BrowserWindow();
+              }
+
+              return TimerTab();
+            })),
           ],
         ));
   }
 }
 
-enum AppTab { timer, lyrics, settings }
+enum AppTab { timer, lyrics, settings, browser }

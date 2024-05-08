@@ -307,7 +307,6 @@ class _TimerSubwindowCounterState extends State<TimerSubwindowCounter>
   @override
   Widget build(BuildContext context) {
     fontsize = MediaQuery.sizeOf(context).width * 0.2;
-    // print("------>>> ${window_typeidget.args}");
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(

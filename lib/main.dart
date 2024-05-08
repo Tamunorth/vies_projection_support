@@ -7,11 +7,6 @@ import 'package:untitled/pages/home_page.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
 import 'package:untitled/utils/local_storage.dart';
 
-//
-// void main() {
-//   runApp(MyApp());
-// }
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -25,8 +20,13 @@ class MyApp extends StatelessWidget {
   }
 }
 
-void main(List<String> args) {
-  localStore.init();
+void main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await localStore.init();
+  // if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  //   setWindowTitle('title here');
+  // }
 
   if (args.firstOrNull == 'multi_window') {
     final windowId = int.parse(args[1]);

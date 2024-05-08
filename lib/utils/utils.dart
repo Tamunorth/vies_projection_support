@@ -31,7 +31,7 @@ class EasyUtils {
     );
 
     await FlutterAutoGUI.moveTo(
-      point: const Point(63, 129),
+      point: const Point(63, 130),
       duration: const Duration(microseconds: 1),
     );
 
@@ -68,16 +68,30 @@ class EasyUtils {
     );
     await Future.delayed(delayDuration);
 
-    await FlutterAutoGUI.moveTo(
-      point: const Point(1275, 701),
-      duration: const Duration(microseconds: 1),
+    ///CLICK OK
+    ///
+    await FlutterAutoGUI.press(
+      key: 'tab',
+      times: 5,
+      interval: const Duration(microseconds: 1),
     );
 
-    await Future.delayed(delayDuration);
-
-    await FlutterAutoGUI.click(
-      button: MouseButton.left,
+    await FlutterAutoGUI.press(
+      key: 'enter',
+      times: 1,
+      interval: const Duration(microseconds: 1),
     );
+
+    // await FlutterAutoGUI.moveTo(
+    //   point: const Point(1275, 701),
+    //   duration: const Duration(microseconds: 1),
+    // );
+    //
+    // await Future.delayed(delayDuration);
+    //
+    // await FlutterAutoGUI.click(
+    //   button: MouseButton.left,
+    // );
     // await Future.delayed(delayDuration);
     if (localStore.getBool('sendLyrics')) {
       await FlutterAutoGUI.press(key: 'enter', times: 3);

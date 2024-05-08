@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
 
-import '../utils/button_widget.dart';
-import '../utils/local_storage.dart';
+import '../../utils/button_widget.dart';
+import '../../utils/local_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({super.key});
@@ -16,6 +16,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final intentation = TextEditingController();
   final screenWidth = TextEditingController();
   final screenHeight = TextEditingController();
+  final easyWorshipPath = TextEditingController();
 
   final pref = localStore;
 
@@ -70,18 +71,18 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 child: ListTile(
                   title: Text(
-                    'Default Indentation',
+                    'Lines before break',
                     style: TextStyle(fontSize: 24, color: Colors.white),
                   ),
                   subtitle: Text(
-                    'Lyrics indentation',
+                    'Line break frequency',
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ),
               ),
               TimerTextField(
                 minutesCtrl: intentation,
-                hint: 'Delay Indentation',
+                hint: '',
               ),
             ],
           ),
@@ -154,9 +155,11 @@ class _SettingsPageState extends State<SettingsPage> {
           ButtonWidget(
             title: 'Save Updates',
             onTap: () async {
-              pref.setValue('duration', durationTimer.text);
+              pref.setValue('duration',
+                  durationTimer.text.isEmpty ? '50' : durationTimer.text);
 
-              pref.setValue('indent', intentation.text);
+              pref.setValue(
+                  'indent', intentation.text.isEmpty ? '2' : intentation.text);
 
               pref.setValue('screenWidth',
                   screenWidth.text.isEmpty ? '1920' : screenWidth.text);
