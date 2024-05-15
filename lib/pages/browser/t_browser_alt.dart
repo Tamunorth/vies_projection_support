@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:untitled/utils/local_storage.dart';
+import 'package:untitled/utils/utils.dart';
 import 'package:webview_windows/webview_windows.dart';
 // import 'package:window_manager/window_manager.dart';
 
@@ -19,7 +21,8 @@ class ExampleBrowser extends StatefulWidget {
   State<ExampleBrowser> createState() => _ExampleBrowser();
 }
 
-class _ExampleBrowser extends State<ExampleBrowser> {
+class _ExampleBrowser extends State<ExampleBrowser>
+    with AutomaticKeepAliveClientMixin<ExampleBrowser> {
   final _controller = WebviewController();
   final _textController = TextEditingController();
   final List<StreamSubscription> _subscriptions = [];
@@ -28,6 +31,7 @@ class _ExampleBrowser extends State<ExampleBrowser> {
   @override
   void initState() {
     super.initState();
+
     initPlatformState();
   }
 
@@ -98,56 +102,14 @@ class _ExampleBrowser extends State<ExampleBrowser> {
         padding: EdgeInsets.all(5),
         child: Column(
           children: [
-            IconButton(
-                onPressed: () {
-                  _controller.executeScript("""
-
-                  // Disable JavaScript in the current browser window
-document.addEventListener("DOMContentLoaded", function() {
-    // Set a flag to disable JavaScript
-    Object.defineProperty(window, 'javascriptEnabled', { value: false });
-
-    // Override key JavaScript functions to prevent execution
-    window.eval = function() {
-        console.error("JavaScript execution is disabled.");
-    };
-    window.Function = function() {
-        console.error("JavaScript execution is disabled.");
-    };
-    window.setTimeout = function() {
-        console.error("JavaScript execution is disabled.");
-    };
-    window.setInterval = function() {
-        console.error("JavaScript execution is disabled.");
-    };
-
-    // Clear existing event listeners to prevent JavaScript execution
-    document.querySelectorAll("*").forEach(function(node) {
-        node.removeAttribute("onload");
-        node.removeAttribute("onclick");
-        node.removeAttribute("onsubmit");
-        node.removeAttribute("onchange");
-        node.removeAttribute("onmouseover");
-        node.removeAttribute("onmouseout");
-        node.removeAttribute("onkeydown");
-        node.removeAttribute("onkeyup");
-    });
-
-    // Log a message to indicate JavaScript is disabled
-    console.log("JavaScript is disabled in this browser window.");
-});
-
-                  """);
-                  _controller.openDevTools();
-                },
-                icon: Icon(Icons.open_in_new)),
             Card(
               elevation: 0,
               child: Row(children: [
                 Expanded(
                   child: TextField(
+                    autofocus: true,
                     decoration: InputDecoration(
-                      hintText: 'URL',
+                      hintText: 'Enter lyrics to find',
                       contentPadding: EdgeInsets.all(10.0),
                     ),
                     textAlignVertical: TextAlignVertical.center,
@@ -210,16 +172,38 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
+  final EasyUtils utils = EasyUtils();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: StreamBuilder<String>(
-        stream: _controller.title,
-        builder: (context, snapshot) {
-          return Text(snapshot.hasData ? snapshot.data! : 'View Browser');
+      backgroundColor: Colors.black,
+      floatingActionButton: FloatingActionButton.extended(
+        icon: Icon(Icons.format_align_center),
+        onPressed: () async {
+          await utils.copyClipboard(
+            context,
+            int.parse(
+              (localStore.get('indent') != null &&
+                      localStore.get('indent')!.isNotEmpty)
+                  ? localStore.get('indent')!
+                  : '1',
+            ),
+          );
         },
-      )),
+        label: Text('Format'),
+      ),
+      appBar: AppBar(
+          backgroundColor: Colors.black,
+          title: StreamBuilder<String>(
+            stream: _controller.title,
+            builder: (context, snapshot) {
+              return Text(
+                snapshot.hasData ? snapshot.data! : 'Vies Browser',
+                style: TextStyle(color: Colors.white),
+              );
+            },
+          )),
       body: Center(
         child: compositeView(),
       ),
@@ -257,4 +241,7 @@ document.addEventListener("DOMContentLoaded", function() {
     _controller.dispose();
     super.dispose();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

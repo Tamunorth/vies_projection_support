@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:custom_timer/custom_timer.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:untitled/utils/button_widget.dart';
-import 'package:untitled/utils/local_storage.dart';
 import 'package:untitled/utils/utils.dart';
 // import 'package:flutter_multi_window_example/event_widget.dart';
 
@@ -95,6 +92,13 @@ class _TimerTabState extends State<TimerTab> {
               color: Colors.red,
               onTap: () => EasyUtils.closeTimerWindows(),
             ),
+            // SizedBox(
+            //   height: 200,
+            //   width: 200,
+            //   child: TimerSubwindowCounterAlt(
+            //     args: [minutesCtrl.text.trim(), secondsCtrl.text.trim()],
+            //   ),
+            // )
           ],
         ),
       ],
@@ -102,46 +106,54 @@ class _TimerTabState extends State<TimerTab> {
   }
 
   void _createTimerWindow() async {
-    final scrWidth = double.parse(localStore.get('screenWidth') ?? '1920');
-    final scrHeight = double.parse(localStore.get('screenHeight') ?? '1080');
-    final windowMain = await DesktopMultiWindow.createWindow(jsonEncode({
-      'args1': 'Timer window',
-      'args2': 10,
-      'args3': true,
-      'window_type': 'main',
-    }));
-    final windowPreview = await DesktopMultiWindow.createWindow(jsonEncode({
-      'args1': 'Preview window',
-      'args2': 10,
-      'args3': true,
-      'window_type': 'preview',
-    }));
-
-    windowMain
-      ..setFrame(Offset(scrWidth, 0) & Size(scrWidth, scrHeight))
-      ..show();
-
-    windowPreview
-      ..setFrame(const Offset(0, 0) & Size(scrWidth / 2, scrHeight / 2.5))
-      ..show();
+    // final previewScreenDimens = screenDimensions.value
+    //     .firstWhere((element) => element.frame.left == 0.0)
+    //     .frame;
+    // final mainScreenDimens = screenDimensions.value
+    //     .firstWhere((element) => element.frame.left != 0.0)
+    //     .frame;
+    //
+    // final windowMain = await DesktopMultiWindow.createWindow(jsonEncode({
+    //   'args1': 'Timer window',
+    //   'args2': 10,
+    //   'args3': true,
+    //   'window_type': 'main',
+    // }));
+    // final windowPreview = await DesktopMultiWindow.createWindow(jsonEncode({
+    //   'args1': 'Preview window',
+    //   'args2': 10,
+    //   'args3': true,
+    //   'window_type': 'preview',
+    // }));
+    //
+    // windowMain
+    //   ..setFrame(Offset(mainScreenDimens.left, mainScreenDimens.top) &
+    //       Size(mainScreenDimens.width, mainScreenDimens.height))
+    //   ..show();
+    //
+    // windowPreview
+    //   ..setFrame(Offset(previewScreenDimens.left,
+    //           previewScreenDimens.top + (previewScreenDimens.height / 2)) &
+    //       Size(previewScreenDimens.width / 2, previewScreenDimens.height / 2.5))
+    //   ..show();
     //
     //
     // await EasyUtils.createTimerWindow();
 
-    // try {
-    //   // final subWindowIds = await DesktopMultiWindow.getAllSubWindowIds();
-    //   //
-    //   // subWindowIds.forEach((element) {
-    //   //   WindowController.fromWindowId(element).close();
-    //   // });
-    //
-    //   await EasyUtils.createTimerWindow();
-    // } catch (e) {
-    //   print(e);
-    //   await EasyUtils.createTimerWindow();
-    // } finally {
-    //   // await EasyUtils.createTimerWindow();
-    // }
+    try {
+      // final subWindowIds = await DesktopMultiWindow.getAllSubWindowIds();
+      //
+      // subWindowIds.forEach((element) {
+      //   WindowController.fromWindowId(element).close();
+      // });
+
+      await EasyUtils.closeTimerWindows();
+    } catch (e) {
+      print(e);
+      // await EasyUtils.createTimerWindow();
+    } finally {
+      await EasyUtils.createTimerWindow();
+    }
   }
 
   void _resetTimer() async {
@@ -162,6 +174,8 @@ class _TimerTabState extends State<TimerTab> {
           [minutesCtrl.text.trim(), secondsCtrl.text.trim()],
         );
       }
+
+      // TimerSubwindowCounterAlt.globalKey.currentState?.resetTimer();
     } catch (e) {}
   }
 
@@ -183,6 +197,8 @@ class _TimerTabState extends State<TimerTab> {
           [minutesCtrl.text.trim(), secondsCtrl.text.trim()],
         );
       }
+
+      // TimerSubwindowCounterAlt.globalKey.currentState?.onChange();
     } catch (e) {}
   }
 }

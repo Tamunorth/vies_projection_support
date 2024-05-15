@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_multi_window
   flutter_auto_gui_windows
+  url_launcher_windows
   webview_windows
   window_size
 )

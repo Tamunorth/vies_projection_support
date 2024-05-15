@@ -8,10 +8,7 @@ import '../timer/timer_page.dart';
 class LyricsTab extends StatefulWidget {
   LyricsTab({
     super.key,
-    required this.utils,
   });
-
-  final EasyUtils utils;
 
   @override
   State<LyricsTab> createState() => _LyricsTabState();
@@ -27,6 +24,8 @@ class _LyricsTabState extends State<LyricsTab> {
 
     indentCtrl.text = localStore.get('indent') ?? '2';
   }
+
+  final EasyUtils utils = EasyUtils();
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +56,15 @@ class _LyricsTabState extends State<LyricsTab> {
               fontWeight: FontWeight.w700,
             ),
           ),
+          const Text(
+            'NB: Please switch off NUM LOCK',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.red,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(
             height: 40,
           ),
@@ -68,17 +76,22 @@ class _LyricsTabState extends State<LyricsTab> {
           ButtonWidget(
             title: 'Format Text',
             onTap: () async {
-              await widget.utils.copyClipboard(
+              await utils.copyClipboard(
                 context,
                 int.parse(
-                  (localStore.get('indent') != null &&
-                          localStore.get('indent')!.isNotEmpty)
-                      ? localStore.get('indent')!
-                      : indentCtrl.text,
+                  indentCtrl.text.isNotEmpty
+                      ? indentCtrl.text
+                      : (localStore.get('indent') != null &&
+                              localStore.get('indent')!.isNotEmpty)
+                          ? localStore.get('indent')!
+                          : '1',
                 ),
               );
 
-              await localStore.setValue('indent', indentCtrl.text);
+              localStore.setValue(
+                'indent',
+                indentCtrl.text.isNotEmpty ? indentCtrl.text : '1',
+              );
             },
           ),
         ],

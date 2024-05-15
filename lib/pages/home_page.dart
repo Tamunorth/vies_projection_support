@@ -3,6 +3,7 @@ import 'package:untitled/pages/browser/t_browser_alt.dart';
 import 'package:untitled/pages/settings/settings.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
 import 'package:untitled/utils/utils.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:window_size/window_size.dart';
 
 import '../utils/custom_nav_tile.dart';
@@ -20,7 +21,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final EasyUtils utils = EasyUtils();
 
-  AppTab _value = AppTab.lyrics;
+  int _value = 0;
+
+  final pages = [
+    LyricsTab(),
+    ExampleBrowser(),
+    TimerTab(),
+    SettingsPage(),
+  ];
 
   @override
   void initState() {
@@ -32,12 +40,15 @@ class _HomePageState extends State<HomePage> {
   getList() async {
     final list = await getScreenList();
 
+    screenDimensions.value = list;
+
     list?.forEach((element) {
       print(element.frame);
     });
+
     final screen = await getCurrentScreen();
 
-    print(screen?.visibleFrame);
+    // print(screen?.visibleFrame);
   }
 
   @override
@@ -65,21 +76,21 @@ class _HomePageState extends State<HomePage> {
                   Column(
                     children: [
                       MyRadioListTile(
-                        value: AppTab.lyrics,
+                        value: 0,
                         groupValue: _value,
                         onChanged: (value) => setState(() => _value = value!),
                         title: "Lyrics",
                         icon: Icons.music_note,
                       ),
                       MyRadioListTile(
-                        value: AppTab.browser,
+                        value: 1,
                         groupValue: _value,
                         onChanged: (value) => setState(() => _value = value!),
                         title: "Browser",
                         icon: Icons.web,
                       ),
                       MyRadioListTile(
-                        value: AppTab.timer,
+                        value: 2,
                         groupValue: _value,
                         onChanged: (value) => setState(() => _value = value!),
                         title: "Timer",
@@ -89,31 +100,40 @@ class _HomePageState extends State<HomePage> {
                         height: 45,
                       ),
                       MyRadioListTile(
-                        value: AppTab.settings,
+                        value: 3,
                         groupValue: _value,
                         onChanged: (value) => setState(() => _value = value!),
                         title: "Settings",
                         icon: Icons.settings,
                       ),
+                      SizedBox(
+                        height: 45,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          launchUrlString(
+                              'https://www.linkedin.com/in/davies-manuel/');
+                        },
+                        child: Row(
+                          children: [
+                            SizedBox(width: 24),
+                            Text(
+                              '@Tamunorth',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                 ],
               ),
             ),
-            Expanded(child: Builder(builder: (context) {
-              if (_value == AppTab.lyrics) {
-                return LyricsTab(utils: utils);
-              }
-
-              if (_value == AppTab.settings) {
-                return SettingsPage();
-              }
-              if (_value == AppTab.browser) {
-                return BrowserWindow();
-              }
-
-              return TimerTab();
-            })),
+            Expanded(
+                child: IndexedStack(
+              index: _value,
+              children: pages,
+            ))
           ],
         ));
   }

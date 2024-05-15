@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_auto_gui/flutter_auto_gui.dart';
 import 'package:process_run/process_run.dart';
 import 'package:untitled/utils/local_storage.dart';
+import 'package:window_size/window_size.dart';
+
+ValueNotifier<List<Screen>> screenDimensions = ValueNotifier([]);
 
 class EasyUtils {
   Future<void> createSongFile() async {
@@ -26,21 +30,26 @@ class EasyUtils {
     await Future.delayed(delayDuration);
 
     await FlutterAutoGUI.click(
-      button: MouseButton.left,
-      // interval: const Duration(microseconds: 1),
+      button: MouseButton.left, clicks: 1,
+      // interval: const Duration(milliseconds: 1),
     );
 
-    await FlutterAutoGUI.moveTo(
-      point: const Point(63, 130),
-      duration: const Duration(microseconds: 1),
+    // PASTE LYRIC
+
+    await Future.delayed(delayDuration);
+
+    await FlutterAutoGUI.press(
+      key: 'down',
+      times: 2,
+      // interval: const Duration(microseconds: 1),
     );
 
     await Future.delayed(delayDuration);
 
-    await FlutterAutoGUI.click(
-      button: MouseButton.left,
+    await FlutterAutoGUI.press(
+      key: 'enter',
+      interval: const Duration(microseconds: 1),
     );
-
     await Future.delayed(delayDuration);
 
     // PASTE LYRICS
@@ -52,7 +61,7 @@ class EasyUtils {
     await Future.delayed(delayDuration);
 
     await FlutterAutoGUI.moveTo(
-      point: const Point(320, 69),
+      point: const Point(320, 79),
       duration: const Duration(microseconds: 1),
     );
 
@@ -154,6 +163,15 @@ class EasyUtils {
   }
 
   static Future<void> createTimerWindow() async {
+    final previewScreenDimens = screenDimensions.value
+            .firstWhereOrNull((element) => element.frame.left == 0.0)
+            ?.frame ??
+        Rect.zero;
+    final mainScreenDimens = screenDimensions.value
+            .firstWhereOrNull((element) => element.frame.left != 0.0)
+            ?.frame ??
+        Rect.zero;
+
     final windowMain = await DesktopMultiWindow.createWindow(jsonEncode({
       'args1': 'Timer window',
       'args2': 10,
@@ -168,11 +186,14 @@ class EasyUtils {
     }));
 
     windowMain
-      ..setFrame(const Offset(0, 0) & const Size(1920, 1080))
+      ..setFrame(Offset(mainScreenDimens.left, mainScreenDimens.top) &
+          Size(mainScreenDimens.width, mainScreenDimens.height))
       ..show();
 
     windowPreview
-      ..setFrame(const Offset(-1920, 0) & const Size(720, 450))
+      ..setFrame(Offset(previewScreenDimens.left,
+              previewScreenDimens.top + (previewScreenDimens.height / 2)) &
+          Size(previewScreenDimens.width / 2, previewScreenDimens.height / 2.5))
       ..show();
   }
 

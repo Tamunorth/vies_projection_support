@@ -115,43 +115,43 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: Text(
-                    'Screen Width',
-                    style: TextStyle(fontSize: 24, color: Colors.white),
-                  ),
-                ),
-              ),
-              TimerTextField(
-                minutesCtrl: screenWidth,
-                hint: '1920',
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 50,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: Text(
-                    'Screen Height',
-                    style: TextStyle(fontSize: 24, color: Colors.white),
-                  ),
-                ),
-              ),
-              TimerTextField(
-                minutesCtrl: screenHeight,
-                hint: '1080',
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Expanded(
+          //       child: ListTile(
+          //         title: Text(
+          //           'Screen Width',
+          //           style: TextStyle(fontSize: 24, color: Colors.white),
+          //         ),
+          //       ),
+          //     ),
+          //     TimerTextField(
+          //       minutesCtrl: screenWidth,
+          //       hint: '1920',
+          //     ),
+          //   ],
+          // ),
+          // SizedBox(
+          //   height: 50,
+          // ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Expanded(
+          //       child: ListTile(
+          //         title: Text(
+          //           'Screen Height',
+          //           style: TextStyle(fontSize: 24, color: Colors.white),
+          //         ),
+          //       ),
+          //     ),
+          //     TimerTextField(
+          //       minutesCtrl: screenHeight,
+          //       hint: '1080',
+          //     ),
+          //   ],
+          // ),
           ButtonWidget(
             title: 'Save Updates',
             onTap: () async {
