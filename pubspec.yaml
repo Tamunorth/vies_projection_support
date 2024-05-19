@@ -43,7 +43,10 @@ dependencies:
   custom_timer:
   url_launcher:
   shared_preferences: ^2.2.3
-  webview_windows: ^0.4.0
+  webview_windows:
+    git:
+      url: https://github.com/Tamunorth/flutter-webview-windows
+      ref: main
   window_size:
     git:
       url: https://github.com/google/flutter-desktop-embedding
@@ -91,8 +94,8 @@ flutter:
     - assets/sally.png
     - assets/logo.png
     - assets/example.png
-      # An image asset can refer to one or more resolution-specific "variants", see
-      # https://flutter.dev/assets-and-images/#resolution-aware
+    # An image asset can refer to one or more resolution-specific "variants", see
+    # https://flutter.dev/assets-and-images/#resolution-aware
 
     # For details regarding adding assets from package dependencies, see
     # https://flutter.dev/assets-and-images/#from-packages

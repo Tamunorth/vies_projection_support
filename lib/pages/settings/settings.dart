@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/pages/home_page.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
 
 import '../../utils/button_widget.dart';
@@ -165,6 +166,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   screenWidth.text.isEmpty ? '1920' : screenWidth.text);
               pref.setValue('screenHeight',
                   screenHeight.text.isEmpty ? '1080' : screenHeight.text);
+
+              globalIndentationValue.value = int.parse(
+                (localStore.get('indent') != null &&
+                        localStore.get('indent')!.isNotEmpty)
+                    ? localStore.get('indent')!
+                    : '1',
+              );
 
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text('Saved!')));

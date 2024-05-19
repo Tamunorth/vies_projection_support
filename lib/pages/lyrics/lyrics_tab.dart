@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/pages/home_page.dart';
 import 'package:untitled/utils/local_storage.dart';
 import 'package:untitled/utils/utils.dart';
 
@@ -8,7 +9,10 @@ import '../timer/timer_page.dart';
 class LyricsTab extends StatefulWidget {
   LyricsTab({
     super.key,
+    // required this.indetationVal,
   });
+
+  // final String indetationVal;
 
   @override
   State<LyricsTab> createState() => _LyricsTabState();
@@ -22,7 +26,7 @@ class _LyricsTabState extends State<LyricsTab> {
     // TODO: implement initState
     super.initState();
 
-    indentCtrl.text = localStore.get('indent') ?? '2';
+    indentCtrl.text = globalIndentationValue.value.toString();
   }
 
   final EasyUtils utils = EasyUtils();

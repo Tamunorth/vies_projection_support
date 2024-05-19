@@ -114,8 +114,8 @@ class _ExampleBrowser extends State<ExampleBrowser>
                     ),
                     textAlignVertical: TextAlignVertical.center,
                     controller: _textController,
-                    onSubmitted: (val) {
-                      _controller.loadUrl(
+                    onSubmitted: (val) async {
+                      await _controller.loadUrl(
                           "https://www.google.com/search?q=$val lyrics");
                     },
                   ),
@@ -178,20 +178,38 @@ class _ExampleBrowser extends State<ExampleBrowser>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      floatingActionButton: FloatingActionButton.extended(
-        icon: Icon(Icons.format_align_center),
-        onPressed: () async {
-          await utils.copyClipboard(
-            context,
-            int.parse(
-              (localStore.get('indent') != null &&
-                      localStore.get('indent')!.isNotEmpty)
-                  ? localStore.get('indent')!
-                  : '1',
-            ),
-          );
-        },
-        label: Text('Format'),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.sizeOf(context).height * 0.05,
+          right: MediaQuery.sizeOf(context).height * 0.05,
+        ),
+        child: FloatingActionButton.extended(
+          backgroundColor: Colors.blue,
+          icon: Icon(Icons.format_align_center),
+          onPressed: () async {
+            final indentation = localStore.get('indent');
+
+            final selectedText = await _controller
+                .executeScript('window.getSelection().toString()');
+
+            if (selectedText != null && selectedText.isNotEmpty) {
+              await utils.copyClipboard(
+                context,
+                int.parse(
+                  (indentation != null && indentation.isNotEmpty)
+                      ? indentation
+                      : '1',
+                ),
+                selectedText,
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('No text selected')),
+              );
+            }
+          },
+          label: Text('Format Text'),
+        ),
       ),
       appBar: AppBar(
           backgroundColor: Colors.black,

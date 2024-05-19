@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:untitled/pages/browser/t_browser_alt.dart';
 import 'package:untitled/pages/settings/settings.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
+import 'package:untitled/utils/local_storage.dart';
 import 'package:untitled/utils/utils.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:window_size/window_size.dart';
 
 import '../utils/custom_nav_tile.dart';
 import 'lyrics/lyrics_tab.dart';
+
+ValueNotifier<int> globalIndentationValue = ValueNotifier(1);
 
 class HomePage extends StatefulWidget {
   HomePage({
@@ -23,13 +26,6 @@ class _HomePageState extends State<HomePage> {
 
   int _value = 0;
 
-  final pages = [
-    LyricsTab(),
-    ExampleBrowser(),
-    TimerTab(),
-    SettingsPage(),
-  ];
-
   @override
   void initState() {
     // TODO: implement initState
@@ -38,6 +34,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   getList() async {
+    globalIndentationValue.value = int.parse(
+      (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
+          ? localStore.get('indent')!
+          : '1',
+    );
     final list = await getScreenList();
 
     screenDimensions.value = list;
@@ -51,8 +52,27 @@ class _HomePageState extends State<HomePage> {
     // print(screen?.visibleFrame);
   }
 
+  final pages = [
+    ValueListenableBuilder(
+        valueListenable: globalIndentationValue,
+        builder: (context, value, child) {
+          return LyricsTab(
+            key: ValueKey(value),
+            // indetationVal: value.toString(),
+          );
+        }),
+    ExampleBrowser(),
+    TimerTab(),
+    SettingsPage(),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    globalIndentationValue.value = int.parse(
+      (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
+          ? localStore.get('indent')!
+          : '1',
+    );
     return Scaffold(
         backgroundColor: Color(0xff141414),
         body: Row(

@@ -61,7 +61,7 @@ class EasyUtils {
     await Future.delayed(delayDuration);
 
     await FlutterAutoGUI.moveTo(
-      point: const Point(320, 79),
+      point: const Point(320, 76),
       duration: const Duration(microseconds: 1),
     );
 
@@ -133,21 +133,20 @@ class EasyUtils {
     return result;
   }
 
-  Future<void> copyClipboard(
-    BuildContext context, [
-    int indentation = 2,
-  ]) async {
+  Future<void> copyClipboard(BuildContext context,
+      [int indentation = 2, String? copiedText]) async {
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    final text = removeDollyStrings(clipboardData?.text ?? '');
+
+    final text = removeDollyStrings(copiedText ?? (clipboardData?.text ?? ''));
 
     final indentedText2 = text.split('\n').asMap().entries.map((entry) {
       final index = entry.key;
       final line = entry.value;
-      if (index % indentation == 0) {
-        return '   \n\n$line';
+      if (index > 0 && (index + 1) % indentation == 0) {
+        return '$line\n';
       }
       return line;
-    }).join('');
+    }).join('\n');
 
     final useful = ClipboardData(text: indentedText2.trimLeft());
 
