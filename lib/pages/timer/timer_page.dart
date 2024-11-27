@@ -209,10 +209,12 @@ class TimerTextField extends StatelessWidget {
     required this.minutesCtrl,
     required this.hint,
     this.paddingVert = 30,
+    this.onChanged,
   });
 
   final TextEditingController minutesCtrl;
   final String hint;
+  final Function(String)? onChanged;
   final double paddingVert;
 
   @override
@@ -226,6 +228,7 @@ class TimerTextField extends StatelessWidget {
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
+          onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
             fillColor: Colors.white,

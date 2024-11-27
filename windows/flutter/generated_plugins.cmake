@@ -3,10 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  desktop_drop
   desktop_multi_window
   flutter_auto_gui_windows
+  screen_retriever_windows
   url_launcher_windows
-  webview_windows
+  window_manager
   window_size
 )
 

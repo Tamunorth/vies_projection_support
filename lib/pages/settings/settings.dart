@@ -116,23 +116,31 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Expanded(
-          //       child: ListTile(
-          //         title: Text(
-          //           'Screen Width',
-          //           style: TextStyle(fontSize: 24, color: Colors.white),
-          //         ),
-          //       ),
-          //     ),
-          //     TimerTextField(
-          //       minutesCtrl: screenWidth,
-          //       hint: '1920',
-          //     ),
-          //   ],
-          // ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: ListTile(
+                  title: Text(
+                    'Open EasyWorship',
+                    style: TextStyle(fontSize: 24, color: Colors.white),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: Checkbox(
+                  value: localStore.getBool('openEasyWorship'),
+                  onChanged: (value) {
+                    setState(() {
+                      localStore.setBool('openEasyWorship', value ?? true);
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
           // SizedBox(
           //   height: 50,
           // ),

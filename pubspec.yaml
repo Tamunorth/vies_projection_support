@@ -43,14 +43,29 @@ dependencies:
   custom_timer:
   url_launcher:
   shared_preferences: ^2.2.3
-  webview_windows:
-    git:
-      url: https://github.com/Tamunorth/flutter-webview-windows
-      ref: main
+  file_picker: ^8.0.3
+  desktop_drop: ^0.4.4
+  screenshot: ^2.4.0
+  ffmpeg_helper:
+  sqflite_common_ffi:
+
+  ffi:
   window_size:
     git:
       url: https://github.com/google/flutter-desktop-embedding
       path: plugins/window_size
+  qr_flutter: ^4.1.0
+  #  webview_windows:
+  #    git:
+  #      url: https://github.com/Tamunorth/flutter-webview-windows
+  ffmpeg_kit_flutter: ^6.0.3
+  video_player: ^2.9.2
+  window_manager:
+  #  media_kit: ^1.1.11
+  #  media_kit_video: ^1.2.5
+  #  media_kit_native_event_loop: ^1.0.9
+#  media_kit_libs_video: ^1.0.5
+#  media_kit_libs_audio: ^1.0.5
 
 
 dev_dependencies:

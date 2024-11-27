@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/pages/lyrics/lyrics_textfield.dart';
 import 'package:untitled/utils/local_storage.dart';
 import 'package:untitled/utils/utils.dart';
 
@@ -21,12 +21,28 @@ class LyricsTab extends StatefulWidget {
 class _LyricsTabState extends State<LyricsTab> {
   final TextEditingController indentCtrl = TextEditingController();
 
+  ValueNotifier<String> _formattedText = ValueNotifier('');
+  final pref = localStore;
+
+  @override
+  void didUpdateWidget(covariant LyricsTab oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    indentCtrl.text = pref.get('indent') ?? '';
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    indentCtrl.text = pref.get('indent') ?? '';
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    indentCtrl.text = globalIndentationValue.value.toString();
+    indentCtrl.text = pref.get('indent') ?? '';
   }
 
   final EasyUtils utils = EasyUtils();
@@ -35,70 +51,75 @@ class _LyricsTabState extends State<LyricsTab> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Convert lyric text to EasyWorship slides with ease',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 48,
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: 40),
+            ValueListenableBuilder(
+                valueListenable: _formattedText,
+                builder: (context, text, _) {
+                  return LyricsDisplay(lyrics: text);
+                }),
+            // const Text(
+            //   'Convert lyric text to EasyWorship slides with ease',
+            //   textAlign: TextAlign.center,
+            //   style: TextStyle(
+            //     fontSize: 48,
+            //     color: Colors.white,
+            //     fontWeight: FontWeight.w700,
+            //   ),
+            // ),
+            const SizedBox(
+              height: 20,
             ),
-          ),
-          const SizedBox(
-            height: 40,
-          ),
-          const Text(
-            'Simplify your worship slide preparations and enhance your presentations with SongSync',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+            const Text(
+              'Simplify your worship slide preparations and enhance your presentations',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const Text(
-            'NB: Please switch off NUM LOCK',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.red,
-              fontWeight: FontWeight.w700,
+            const SizedBox(
+              height: 40,
             ),
-          ),
-          const SizedBox(
-            height: 40,
-          ),
-          TimerTextField(
-            hint: "Indentation",
-            paddingVert: 20,
-            minutesCtrl: indentCtrl,
-          ),
-          ButtonWidget(
-            title: 'Format Text',
-            onTap: () async {
-              await utils.copyClipboard(
-                context,
-                int.parse(
-                  indentCtrl.text.isNotEmpty
-                      ? indentCtrl.text
-                      : (localStore.get('indent') != null &&
-                              localStore.get('indent')!.isNotEmpty)
-                          ? localStore.get('indent')!
-                          : '1',
-                ),
-              );
-
-              localStore.setValue(
-                'indent',
-                indentCtrl.text.isNotEmpty ? indentCtrl.text : '1',
-              );
-            },
-          ),
-        ],
+            TimerTextField(
+              hint: "Indentation",
+              paddingVert: 20,
+              minutesCtrl: indentCtrl,
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  print('object');
+                  localStore.setValue(
+                    'indent',
+                    indentCtrl.text.isNotEmpty ? indentCtrl.text : '1',
+                  );
+                }
+              },
+            ),
+            ButtonWidget(
+              title: 'Format Text',
+              onTap: () async {
+                _formattedText.value = await utils.copyClipboard(
+                      context,
+                      createSong: localStore.getBool('openEasyWorship'),
+                      indentation: int.parse(
+                        indentCtrl.text.isNotEmpty
+                            ? indentCtrl.text
+                            : (localStore.get('indent') != null &&
+                                    localStore.get('indent')!.isNotEmpty)
+                                ? localStore.get('indent')!
+                                : '1',
+                      ),
+                    ) ??
+                    '';
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

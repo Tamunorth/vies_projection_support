@@ -1,8 +1,29 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <flutter/event_channel.h>
+#include <flutter/event_sink.h>
+#include <flutter/event_stream_handler_functions.h>
+#include <flutter/method_channel.h>
+#include <flutter/standard_method_codec.h>
+
+//BLOCK INPUT
+#include <windows.h>
+
+#include <memory>
+
 
 #include "flutter/generated_plugin_registrant.h"
+
+
+
+static int GetBatteryLevel() {
+    SYSTEM_POWER_STATUS status;
+    if (GetSystemPowerStatus(&status) == 0 || status.BatteryLifePercent == 255) {
+        return -1;
+    }
+    return status.BatteryLifePercent;
+}
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -25,7 +46,52 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
-  SetChildContent(flutter_controller_->view()->GetNativeWindow());
+
+
+
+    flutter::MethodChannel<> channel(
+            flutter_controller_->engine()->messenger(), "com.example.untitled/inputBlocker",
+            &flutter::StandardMethodCodec::GetInstance());
+
+
+    channel.SetMethodCallHandler(
+            [](const flutter::MethodCall<>& call,
+               std::unique_ptr<flutter::MethodResult<>> result) {
+
+                 if (call.method_name() == "getBatteryLevel") {
+                    int battery_level = GetBatteryLevel();
+                    if (battery_level != -1) {
+                        result->Success(battery_level);
+                    } else {
+                        result->Error("UNAVAILABLE", "Battery level not available.");
+                    }
+                }else  if (call.method_name() == "downKey") {
+                     INPUT ip;
+                     ip.type = INPUT_KEYBOARD;
+                     ip.ki.wScan = 0;
+                     ip.ki.time = 0;
+                     ip.ki.dwExtraInfo = 0;
+
+                     ip.ki.wVk = VK_DOWN;
+                     ip.ki.dwFlags = 0;
+                     SendInput(1, &ip, sizeof(INPUT));
+
+                     ip.ki.dwFlags = KEYEVENTF_KEYUP;
+                     SendInput(1, &ip, sizeof(INPUT));
+                     result->Success("SUCCESS");
+                 }
+
+                else{
+                    result->NotImplemented();
+                }
+            });
+
+
+
+    SetChildContent(flutter_controller_->view()->GetNativeWindow());
+
+
+
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();
@@ -69,3 +135,12 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
 }
+
+//
+//void blockInput() {
+//    BlockInput(TRUE);
+//}
+//
+//void unblockInput() {
+//    BlockInput(FALSE);
+//}

@@ -23,6 +23,7 @@ else ()
                 "Debug" "Profile" "Release")
     endif ()
 endif ()
+
 # Define settings.dart for the Profile build mode.
 set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
@@ -106,3 +107,29 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
         CONFIGURATIONS Profile;Release
         COMPONENT Runtime)
+
+#
+install(FILES "${PROJECT_SOURCE_DIR}/dll/Processing.NDI.Lib.x64.dll"
+        DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+        COMPONENT Runtime)
+
+#
+add_custom_target(copy_ndi_dll ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/dll/Processing.NDI.Lib.x64.dll"
+        "$<TARGET_FILE_DIR:${BINARY_NAME}>"
+        DEPENDS ${BINARY_NAME}
+)
+## Add the block_input.cpp to the executable
+#add_library(block_input SHARED
+#        "block_input/block_input.cpp"
+#)
+#
+## Link the library to the executable
+#target_link_libraries(runner PRIVATE block_input)
+
+# Copy the DLL to the output directory
+#add_custom_command(TARGET block_input POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        $<TARGET_FILE:block_input>
+#        $<TARGET_FILE_DIR:runner>)
