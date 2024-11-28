@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/pages/lyrics/lyrics_notifier.dart';
 import 'package:untitled/pages/lyrics/lyrics_textfield.dart';
 import 'package:untitled/utils/local_storage.dart';
 import 'package:untitled/utils/utils.dart';
@@ -19,30 +20,24 @@ class LyricsTab extends StatefulWidget {
 }
 
 class _LyricsTabState extends State<LyricsTab> {
-  final TextEditingController indentCtrl = TextEditingController();
-
-  ValueNotifier<String> _formattedText = ValueNotifier('');
   final pref = localStore;
 
   @override
   void didUpdateWidget(covariant LyricsTab oldWidget) {
-    // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
-    indentCtrl.text = pref.get('indent') ?? '';
+    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-    indentCtrl.text = pref.get('indent') ?? '';
+    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    indentCtrl.text = pref.get('indent') ?? '';
+    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   final EasyUtils utils = EasyUtils();
@@ -58,7 +53,7 @@ class _LyricsTabState extends State<LyricsTab> {
           children: [
             SizedBox(height: 40),
             ValueListenableBuilder(
-                valueListenable: _formattedText,
+                valueListenable: lyricsNotifier.formattedText,
                 builder: (context, text, _) {
                   return LyricsDisplay(lyrics: text);
                 }),
@@ -89,13 +84,14 @@ class _LyricsTabState extends State<LyricsTab> {
             TimerTextField(
               hint: "Indentation",
               paddingVert: 20,
-              minutesCtrl: indentCtrl,
+              minutesCtrl: lyricsNotifier.indentCtrl,
               onChanged: (value) {
                 if (value.isNotEmpty) {
-                  print('object');
                   localStore.setValue(
                     'indent',
-                    indentCtrl.text.isNotEmpty ? indentCtrl.text : '1',
+                    lyricsNotifier.indentCtrl.text.isNotEmpty
+                        ? lyricsNotifier.indentCtrl.text
+                        : '1',
                   );
                 }
               },
@@ -103,12 +99,12 @@ class _LyricsTabState extends State<LyricsTab> {
             ButtonWidget(
               title: 'Format Text',
               onTap: () async {
-                _formattedText.value = await utils.copyClipboard(
+                lyricsNotifier.formattedText.value = await utils.copyClipboard(
                       context,
                       createSong: localStore.getBool('openEasyWorship'),
                       indentation: int.parse(
-                        indentCtrl.text.isNotEmpty
-                            ? indentCtrl.text
+                        lyricsNotifier.indentCtrl.text.isNotEmpty
+                            ? lyricsNotifier.indentCtrl.text
                             : (localStore.get('indent') != null &&
                                     localStore.get('indent')!.isNotEmpty)
                                 ? localStore.get('indent')!

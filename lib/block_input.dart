@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class BlockInput {
@@ -10,10 +13,8 @@ class BlockInput {
   static Future<void> downKey() async {
     try {
       await _channel.invokeMethod('downKey');
-
-      print("Success to unblock input:");
     } catch (e) {
-      print("Failed to unblock input: '${e.toString()}'.");
+      if (kDebugMode) log("Failed to unblock input: '${e.toString()}'.");
     }
   }
 }

@@ -11,6 +11,8 @@ import 'package:untitled/block_input.dart';
 import 'package:untitled/utils/local_storage.dart';
 import 'package:window_size/window_size.dart';
 
+import '../pages/lyrics/lyrics_notifier.dart';
+
 ValueNotifier<List<Screen>> screenDimensions = ValueNotifier([]);
 
 class EasyUtils {
@@ -23,6 +25,12 @@ class EasyUtils {
         'start "" "C:\\Program Files (x86)\\Softouch\\EasyWorship 7\\EasyWorship.exe"');
 
     // await BlockInput.blockInput();
+
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+
+    final clipboardText = clipboardData?.text?.split('\n').firstOrNull;
+
+    List<String>? chars = clipboardText?.characters.toList();
 
     // mouse move function
     await FlutterAutoGUI.moveTo(
@@ -77,9 +85,15 @@ class EasyUtils {
     await FlutterAutoGUI.click(
       button: MouseButton.left,
     );
+    //
+    // await FlutterAutoGUI.hotkey(
+    //   keys: ['ctrl', 'v'],
+    //   interval: const Duration(microseconds: 1),
+    // );
 
+    ///PASTE JUST THE FIRST LINE AS TITLE
     await FlutterAutoGUI.hotkey(
-      keys: ['ctrl', 'v'],
+      keys: chars ?? ['ctrl', 'v'],
       interval: const Duration(microseconds: 1),
     );
     await Future.delayed(delayDuration);
@@ -212,13 +226,12 @@ class EasyUtils {
         ),
       );
 
+      //UPDATE Lyrics View
+      lyricsNotifier.formattedText.value = useful.text ?? '';
+
       if (createSong) {
         await createSongFile();
-
-        // return null;
       }
-
-      // return useful.text;
     });
     return useful.text;
   }
