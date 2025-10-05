@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_auto_gui/flutter_auto_gui.dart';
 import 'package:process_run/process_run.dart';
-import 'package:untitled/block_input.dart';
-import 'package:untitled/utils/local_storage.dart';
+import 'package:vies_projection_support/block_input.dart';
+import 'package:vies_projection_support/utils/local_storage.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import '../pages/lyrics/lyrics_notifier.dart';
 

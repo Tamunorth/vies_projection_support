@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/utils/compress_image.dart';
+import 'package:vies_projection_support/utils/compress_image.dart';
 
 import '../../utils/button_widget.dart';
 

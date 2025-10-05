@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/lyrics/lyrics_notifier.dart';
-import 'package:untitled/pages/lyrics/lyrics_textfield.dart';
-import 'package:untitled/utils/local_storage.dart';
-import 'package:untitled/utils/utils.dart';
+import 'package:vies_projection_support/pages/lyrics/lyrics_notifier.dart';
+import 'package:vies_projection_support/pages/lyrics/lyrics_textfield.dart';
+import 'package:vies_projection_support/utils/local_storage.dart';
+import 'package:vies_projection_support/utils/utils.dart';
 
 import '../../utils/button_widget.dart';
 import '../timer/timer_page.dart';

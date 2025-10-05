@@ -1,4 +1,4 @@
-name: untitled
+name: vies_projection_support
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -65,6 +65,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
+  inno_bundle: ^0.11.2
 
 flutter_launcher_icons:
   image_path: "assets/logo.png"
@@ -127,3 +128,7 @@ flutter:
     #
     # For details regarding fonts from package dependencies,
     # see https://flutter.dev/custom-fonts/#from-packages
+
+inno_bundle:
+  id: f9edf0e0-a1ad-11f0-b560-6b35e4acdc8d
+  publisher: davie

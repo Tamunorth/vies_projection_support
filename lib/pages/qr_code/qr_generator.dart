@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:untitled/utils/button_widget.dart';
+import 'package:vies_projection_support/utils/button_widget.dart';
 
 class QrGenerator extends StatefulWidget {
   const QrGenerator({super.key});
