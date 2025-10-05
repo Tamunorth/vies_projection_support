@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -9,11 +10,16 @@ import 'package:flutter_auto_gui/flutter_auto_gui.dart';
 import 'package:process_run/process_run.dart';
 import 'package:untitled/block_input.dart';
 import 'package:untitled/utils/local_storage.dart';
-import 'package:window_size/window_size.dart';
-
+import 'package:screen_retriever/screen_retriever.dart';
 import '../pages/lyrics/lyrics_notifier.dart';
 
-ValueNotifier<List<Screen>> screenDimensions = ValueNotifier([]);
+ValueNotifier<List<Display>> screenDimensions = ValueNotifier([]);
+
+/// A helper function to load screen data using screen_retriever.
+/// This should be called once when your app initializes.
+Future<void> loadScreenDimensions() async {
+  screenDimensions.value = await screenRetriever.getAllDisplays();
+}
 
 class EasyUtils {
   Future<void> createSongFile() async {
@@ -237,21 +243,42 @@ class EasyUtils {
   }
 
   static Future<void> createTimerWindow() async {
-    final previewScreenDimens = screenDimensions.value
-            .firstWhereOrNull((element) => element.frame.left == 0.0)
-            ?.frame ??
-        Rect.zero;
-    final mainScreenDimens = screenDimensions.value
-            .firstWhereOrNull((element) => element.frame.left != 0.0)
-            ?.frame ??
-        Rect.zero;
+    final allDisplays = await screenRetriever.getAllDisplays();
 
+    // Reliably get the primary display.
+    final primaryDisplay = await screenRetriever.getPrimaryDisplay();
+
+    // Find a secondary display (if one exists).
+    final secondaryDisplay =
+        allDisplays.firstWhereOrNull((d) => d.id != primaryDisplay.id);
+
+    // Create the window for the main output (on the secondary screen if available)
     final windowMain = await DesktopMultiWindow.createWindow(jsonEncode({
       'args1': 'Timer window',
       'args2': 10,
       'args3': true,
       'window_type': 'main',
     }));
+
+    // Position on secondary display, or primary if it's the only one.
+
+    if (secondaryDisplay != null) {
+      final secondaryPosition =
+          secondaryDisplay.visiblePosition ?? const Offset(0, 0);
+      // The `&` operator here creates a Rect from an Offset and a Size.
+      // This syntax is correct in Flutter.
+      windowMain
+        ..setFrame(secondaryPosition & secondaryDisplay.size)
+        ..show();
+    } else {
+      final primaryPosition =
+          primaryDisplay.visiblePosition ?? const Offset(0, 0);
+      windowMain
+        ..setFrame(primaryPosition & primaryDisplay.size)
+        ..show();
+    }
+
+    // Create the window for the preview output (on the primary screen)
     final windowPreview = await DesktopMultiWindow.createWindow(jsonEncode({
       'args1': 'Preview window',
       'args2': 10,
@@ -259,25 +286,28 @@ class EasyUtils {
       'window_type': 'preview',
     }));
 
-    windowMain
-      ..setFrame(Offset(mainScreenDimens.left, mainScreenDimens.top) &
-          Size(mainScreenDimens.width, mainScreenDimens.height))
-      ..show();
+    final primaryPosition =
+        primaryDisplay.visiblePosition ?? const Offset(0, 0);
+    final previewFrame = Offset(
+          primaryPosition.dx,
+          primaryPosition.dy + (primaryDisplay.size.height / 2),
+        ) &
+        Size(
+          primaryDisplay.size.width / 2,
+          primaryDisplay.size.height / 2.5,
+        );
 
     windowPreview
-      ..setFrame(Offset(previewScreenDimens.left,
-              previewScreenDimens.top + (previewScreenDimens.height / 2)) &
-          Size(previewScreenDimens.width / 2, previewScreenDimens.height / 2.5))
+      ..setFrame(previewFrame)
       ..show();
   }
 
   static Future<void> closeTimerWindows() async {
     try {
       final subWindowIds = await DesktopMultiWindow.getAllSubWindowIds();
-
-      subWindowIds.forEach((element) {
-        WindowController.fromWindowId(element).close();
-      });
+      for (final id in subWindowIds) {
+        WindowController.fromWindowId(id).close();
+      }
     } catch (e) {
       print(e);
     }

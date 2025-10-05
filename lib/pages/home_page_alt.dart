@@ -6,7 +6,6 @@ import 'package:untitled/pages/timer/timer_page.dart';
 import 'package:untitled/utils/local_storage.dart';
 import 'package:untitled/utils/utils.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:window_size/window_size.dart';
 
 import '../utils/custom_nav_tile.dart';
 import 'lyrics/lyrics_tab.dart';
@@ -89,18 +88,16 @@ class _HomePageAltState extends State<HomePageAlt> {
   @override
   void initState() {
     super.initState();
-    getList();
+    init();
   }
 
-  getList() async {
+  init() {
     globalIndentationValue.value = int.parse(
       (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
           ? localStore.get('indent')!
           : '1',
     );
-    final list = await getScreenList();
-    screenDimensions.value = list;
-    final screen = await getCurrentScreen();
+    loadScreenDimensions();
   }
 
   @override

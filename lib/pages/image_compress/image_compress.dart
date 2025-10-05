@@ -102,15 +102,23 @@ class _ImageCompressState extends State<ImageCompress> {
         img = await compressImageToSize(passedFile, maxSizeInBytes);
       }
 
-      print(img);
       if (img != null) {
         String? outputFile = await FilePicker.platform.saveFile(
           dialogTitle: 'Please select an output file:',
-          fileName:
-              'compressed_${DateTime.now().millisecondsSinceEpoch}.${img?.path.split('.').last}',
+          allowedExtensions: ['png'],
+          fileName: 'compressed_${DateTime.now().millisecondsSinceEpoch}.png',
         );
 
-        final newImage = await img?.copy('$outputFile');
+        // Check if the user selected a location (didn't cancel)
+        if (outputFile != null) {
+          // FIX: Manually ensure the file path ends with the .png extension.
+          if (!outputFile.toLowerCase().endsWith('.png')) {
+            outputFile = '$outputFile.png';
+          }
+
+          // Now, `outputFile` is guaranteed to have the correct extension.
+          await img?.copy(outputFile);
+        }
       }
     } catch (e, trace) {
       ScaffoldMessenger.of(context).showSnackBar(
