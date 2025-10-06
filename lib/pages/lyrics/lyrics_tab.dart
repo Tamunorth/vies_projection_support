@@ -25,19 +25,25 @@ class _LyricsTabState extends State<LyricsTab> {
   @override
   void didUpdateWidget(covariant LyricsTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+    if (mounted) lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+
+    if (mounted) lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   @override
   void initState() {
     super.initState();
-    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+    // Schedules a callback for the end of this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+      }
+    });
   }
 
   final EasyUtils utils = EasyUtils();

@@ -28,7 +28,7 @@ class EasyUtils {
   Future<void> createSongFile() async {
     final duration = localStore.get('duration');
     final delayDuration = duration == null
-        ? Duration(milliseconds: 50)
+        ? Duration(milliseconds: 300)
         : Duration(milliseconds: int.parse(duration));
     await Shell().run(
         'start "" "C:\\Program Files (x86)\\Softouch\\EasyWorship 7\\EasyWorship.exe"');
@@ -39,10 +39,9 @@ class EasyUtils {
 
     await automation.openNewSongDialog();
 
-    // await Future.delayed(delayDuration);
+    await Future.delayed(delayDuration);
 
     await automation.fillSongDialog(songTitle ?? '', delay: delayDuration);
-    ;
   }
 
   String cleanLyrics(String input) {

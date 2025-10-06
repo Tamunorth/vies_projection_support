@@ -32,8 +32,8 @@ class EasyWorshipAutomation {
     return 0;
   }
 
-  // Find the  Editor dialog
-  int findEditorDialog() {
+  // Find the  Easy worship page
+  int findEasyWorshipMainPage() {
     final titles = [
       'EasyWorship - Default',
     ];
@@ -49,7 +49,7 @@ class EasyWorshipAutomation {
 
   // Find first Edit control
   int? findAllWIndowsWithinEasyWorship() {
-    final dialogHwnd = findEditorDialog();
+    final dialogHwnd = findEasyWorshipMainPage();
     if (dialogHwnd == 0) {
       print('Editor dialog not found');
       return null;
@@ -58,7 +58,7 @@ class EasyWorshipAutomation {
 
     for (final child in children) {
       final className = getClassName(child);
-      print('Child HWND: $child, Class: $className');
+      // print('Child HWND: $child, Class: $className');
       if (className == 'Edit' || className == 'TsdEdit') {
         return child;
       }
@@ -108,7 +108,7 @@ class EasyWorshipAutomation {
 
     for (final child in children) {
       final className = getClassName(child);
-      print('Child HWND: $child, Class: $className');
+      // print('Child HWND: $child, Class: $className');
       if (className == 'Edit' || className == 'TsdEdit') {
         return child;
       }
@@ -169,27 +169,94 @@ class EasyWorshipAutomation {
     SendMessage(hwnd, BM_CLICK, 0, 0);
   }
 
-  // Main automation method
-  Future<bool> fillSongDialog(String title, {Duration? delay}) async {
-    final dialog = findSongEditorDialog();
+  Future<T?> retryOperation<T>(
+    T? Function() operation,
+    bool Function(T?) isSuccess, {
+    int maxAttempts = 3,
+    Duration? delay,
+    String operationName = 'Operation',
+  }) async {
+    final retryDelay = delay ?? Duration(milliseconds: 200);
 
-    if (dialog == 0) {
-      print('Song Editor dialog not found');
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      print('$operationName (attempt $attempt/$maxAttempts)');
+      final result = operation();
+
+      if (isSuccess(result)) {
+        print('$operationName succeeded on attempt $attempt: $result');
+        return result;
+      }
+
+      if (attempt < maxAttempts) {
+        print(
+            '$operationName failed, waiting ${retryDelay.inMilliseconds}ms before retry...');
+        await Future.delayed(retryDelay);
+      }
+    }
+
+    print('$operationName failed after $maxAttempts attempts');
+    return null;
+  }
+
+  Future<int?> findSongEditorDialogWithRetry({
+    int maxAttempts = 3,
+    Duration? delay,
+  }) async {
+    return retryOperation<int>(
+      () => findSongEditorDialog(),
+      (result) => result != null && result != 0,
+      maxAttempts: maxAttempts,
+      delay: delay,
+      operationName: 'Finding Song Editor dialog',
+    );
+  }
+
+  Future<int?> findTitleFieldWithRetry(
+    int dialog, {
+    int maxAttempts = 3,
+    Duration? delay,
+  }) async {
+    return retryOperation<int?>(
+      () => findTitleField(dialog),
+      (result) => result != null,
+      maxAttempts: maxAttempts,
+      delay: delay,
+      operationName: 'Finding title field',
+    );
+  }
+
+  Future<int?> findOkButtonWithRetry(
+    int dialog, {
+    int maxAttempts = 3,
+    Duration? delay,
+  }) async {
+    return retryOperation<int?>(
+      () => findOkButton(dialog),
+      (result) => result != null,
+      maxAttempts: maxAttempts,
+      delay: delay,
+      operationName: 'Finding OK button',
+    );
+  }
+
+// Updated fillSongDialog using the retry functions
+  Future<bool> fillSongDialog(String title, {Duration? delay}) async {
+    final dialog = await findSongEditorDialogWithRetry(delay: delay);
+
+    if (dialog == null) {
       return false;
     }
 
-    print('Found dialog: $dialog');
+    print('Proceeding with dialog: $dialog');
 
     await Future.delayed(delay ?? Duration(milliseconds: 200));
 
     await pasteClipboard();
 
-    // await Future.delayed(delay ?? Duration(milliseconds: 200));
-
     // Find and fill title field
-    final titleField = findTitleField(dialog);
+    final titleField = await findTitleFieldWithRetry(dialog, delay: delay);
     if (titleField == null) {
-      print('Title field not found');
+      print('Title field not found after retries');
       return false;
     }
 
@@ -202,9 +269,9 @@ class EasyWorshipAutomation {
     await Future.delayed(Duration(milliseconds: 300));
 
     // Find and click OK button
-    final okButton = findOkButton(dialog);
+    final okButton = await findOkButtonWithRetry(dialog, delay: delay);
     if (okButton == null) {
-      print('OK button not found');
+      print('OK button not found after retries');
       return false;
     }
 
@@ -212,9 +279,7 @@ class EasyWorshipAutomation {
     clickControl(okButton);
 
     return true;
-  }
-
-  /////
+  } /////
 
 // Helper: Find window by partial title match
   int? findWindowByPartialTitle(String partialTitle) {
@@ -444,7 +509,7 @@ class EasyWorshipAutomation {
     return true;
   }
 
-// Combined function: Open the New Song dialog
+// Open the New Song dialog
   Future<bool> openNewSongDialog() async {
     final clicked = await clickNewButton();
     if (!clicked) {
