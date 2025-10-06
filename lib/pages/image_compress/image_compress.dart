@@ -48,10 +48,10 @@ class _ImageCompressState extends State<ImageCompress> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'DRAG IMAGE HERE',
+                  'Drop Image Here',
                   style: Theme.of(context)
                       .textTheme
-                      .displayLarge
+                      .displayMedium
                       ?.copyWith(color: Colors.white),
                 ),
               ],
@@ -66,8 +66,10 @@ class _ImageCompressState extends State<ImageCompress> {
             else
               SizedBox(
                 width: 240,
-                height: 124,
-                child: Placeholder(),
+                height: 200,
+                child: Image(
+                    fit: BoxFit.cover,
+                    image: AssetImage('assets/image_placeholder.png')),
               ),
             SizedBox(height: 12),
             if (isLoading) ...[
