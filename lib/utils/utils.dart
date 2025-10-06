@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
+import 'dart:developer' as dev;
 
 import 'package:collection/collection.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -11,6 +12,7 @@ import 'package:process_run/process_run.dart';
 import 'package:vies_projection_support/block_input.dart';
 import 'package:vies_projection_support/utils/local_storage.dart';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:vies_projection_support/utils/win_automation.dart';
 import '../pages/lyrics/lyrics_notifier.dart';
 
 ValueNotifier<List<Display>> screenDimensions = ValueNotifier([]);
@@ -22,7 +24,12 @@ Future<void> loadScreenDimensions() async {
 }
 
 class EasyUtils {
+  final automation = EasyWorshipAutomation();
+
   Future<void> createSongFile() async {
+
+
+    
     final duration = localStore.get('duration');
     final delayDuration = duration == null
         ? Duration(milliseconds: 50)
@@ -36,7 +43,7 @@ class EasyUtils {
 
     final clipboardText = clipboardData?.text?.split('\n').firstOrNull;
 
-    List<String>? chars = clipboardText?.characters.toList();
+    // List<String>? chars = clipboardText?.characters.toList();
 
     // mouse move function
     await FlutterAutoGUI.moveTo(
@@ -81,6 +88,12 @@ class EasyUtils {
 
     await Future.delayed(delayDuration);
 
+    automation.fillSongDialog(clipboardText ?? '');
+
+    return;
+
+    await Future.delayed(delayDuration);
+
     await FlutterAutoGUI.moveTo(
       point: const Point(320, 76),
       duration: const Duration(microseconds: 1),
@@ -97,18 +110,20 @@ class EasyUtils {
     //   interval: const Duration(microseconds: 1),
     // );
 
+    dev.log("title: $clipboardText");
+
     ///PASTE JUST THE FIRST LINE AS TITLE
-    await FlutterAutoGUI.hotkey(
-      keys: chars ?? ['ctrl', 'v'],
-      interval: const Duration(microseconds: 1),
+    await FlutterAutoGUI.write(
+      text: clipboardText ?? '',
+      omitInvalid: true,
     );
+
     await Future.delayed(delayDuration);
 
     ///CLICK OK
-
     await FlutterAutoGUI.press(
       key: 'tab',
-      times: 5,
+      times: 6,
       interval: const Duration(microseconds: 1),
     );
 
@@ -130,41 +145,11 @@ class EasyUtils {
     );
     await Future.delayed(delayDuration);
 
-    // await BlockInput.unblockInput();
-
     ///
     if (localStore.getBool('sendLyrics')) {
       await FlutterAutoGUI.press(key: 'enter', times: 3);
     }
   }
-
-  // String removeDollyStrings(String text) {
-  //   // Remove lines starting with (, {, or [
-  //   List<String> lines = text.split('\n');
-  //   lines.removeWhere((line) =>
-  //       line.trimLeft().startsWith('Verse') ||
-  //       line.trimLeft().startsWith('verse') ||
-  //       line.trimLeft().startsWith('Chorus') ||
-  //       line.trimLeft().startsWith('chorus'));
-  //
-  //   // Remove specified occurrences
-  //   String result = lines.join('\n');
-  //   result = result.replaceAll('2ce', '');
-  //   result = result.replaceAll('...', '');
-  //   result = result.replaceAll('2x', '');
-  //   // result = result.replaceAll('(', '');
-  //   // result = result.replaceAll(')', '');
-  //   result = result.replaceAll('.', '');
-  //   result = result.replaceAll(',', '');
-  //   result = result.replaceAll('Chorus', '');
-  //   result = result.replaceAll('chorus', '');
-  //   result = result.replaceAll('Verse', '');
-  //   result = result.replaceAll('verse', '');
-  //   result = result.replaceAll('Bridge', '');
-  //   result = result.replaceAll('bridge', '');
-  //
-  //   return result;
-  // }
 
   String cleanLyrics(String input) {
     // Regular expressions to remove unwanted parts

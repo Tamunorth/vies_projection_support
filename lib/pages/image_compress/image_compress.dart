@@ -54,6 +54,7 @@ class _ImageCompressState extends State<ImageCompress> {
                 ),
               ],
             ),
+            SizedBox(height: 24),
             if (img != null)
               Image.file(
                 img!,
@@ -66,7 +67,11 @@ class _ImageCompressState extends State<ImageCompress> {
                 height: 124,
                 child: Placeholder(),
               ),
-            if (isLoading) CircularProgressIndicator.adaptive(),
+            SizedBox(height: 12),
+            if (isLoading) ...[
+              CircularProgressIndicator.adaptive(),
+              SizedBox(height: 24),
+            ],
             ButtonWidget(
               title: "Pick Image",
               color: Colors.green,

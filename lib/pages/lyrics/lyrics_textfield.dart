@@ -28,6 +28,7 @@ class LyricsDisplay extends StatelessWidget {
             decoration: const InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.zero,
+              hintText: 'Paste or type your lyrics here...',
             ),
             textAlign: TextAlign.left,
           ),
