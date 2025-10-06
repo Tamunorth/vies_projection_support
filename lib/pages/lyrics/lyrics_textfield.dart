@@ -11,26 +11,15 @@ class LyricsDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      height: 300,
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            controller: TextEditingController(text: lyrics),
-            maxLines: null,
-            minLines: 10,
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.5,
-              fontFamily: 'Monospace',
-            ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-              hintText: 'Paste or type your lyrics here...',
-            ),
-            textAlign: TextAlign.left,
+        child: TextField(
+          controller: TextEditingController(text: lyrics),
+          maxLines: 14,
+          minLines: 14,
+          textAlign: TextAlign.left,
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.all(12),
+            hintText: 'Enter or Paste lyrcs here',
           ),
         ),
       ),

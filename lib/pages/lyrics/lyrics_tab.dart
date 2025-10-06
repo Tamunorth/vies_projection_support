@@ -63,15 +63,6 @@ class _LyricsTabState extends State<LyricsTab> {
                 builder: (context, text, _) {
                   return LyricsDisplay(lyrics: text);
                 }),
-            // const Text(
-            //   'Convert lyric text to EasyWorship slides with ease',
-            //   textAlign: TextAlign.center,
-            //   style: TextStyle(
-            //     fontSize: 48,
-            //     color: Colors.white,
-            //     fontWeight: FontWeight.w700,
-            //   ),
-            // ),
             const SizedBox(
               height: 20,
             ),

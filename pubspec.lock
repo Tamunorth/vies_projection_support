@@ -169,6 +169,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  fluent_ui:
+    dependency: "direct main"
+    description:
+      name: fluent_ui
+      sha256: "8645eabacb46bfc9632fadc6e106756cdc6f2a4efb5a4fed4410bd3131306fe8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.12.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -182,6 +190,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.13.1"
+  flutter_localizations:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -248,6 +261,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.2"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.2"
   json_annotation:
     dependency: transitive
     description:
@@ -296,6 +317,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
+  math_expressions:
+    dependency: transitive
+    description:
+      name: math_expressions
+      sha256: e32d803d758ace61cc6c4bdfed1226ff60a6a23646b35685670d28b5616139f8
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.0"
   meta:
     dependency: transitive
     description:
@@ -416,6 +445,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  recase:
+    dependency: transitive
+    description:
+      name: recase
+      sha256: e4eb4ec2dcdee52dcf99cb4ceabaffc631d7424ee55e56f280bc039737f89213
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   rxdart:
     dependency: transitive
     description:
@@ -472,6 +509,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  scroll_pos:
+    dependency: transitive
+    description:
+      name: scroll_pos
+      sha256: cebf602b2dd939de6832bb902ffefb574608d1b84f420b82b381a4007d3c1e1b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.0"
   shared_preferences:
     dependency: "direct main"
     description:

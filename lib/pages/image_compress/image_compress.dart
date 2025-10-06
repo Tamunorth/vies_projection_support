@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:untitled/pages/home_page_alt.dart';
 import 'package:untitled/utils/compress_image.dart';
+import 'package:untitled/utils/snackbar.dart';
 
 import '../../utils/button_widget.dart';
 
@@ -69,12 +71,17 @@ class _ImageCompressState extends State<ImageCompress> {
               ),
             SizedBox(height: 12),
             if (isLoading) ...[
-              CircularProgressIndicator.adaptive(),
-              SizedBox(height: 24),
+              CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+                strokeWidth: 5,
+                backgroundColor: accentColor,
+                trackGap: 12,
+                color: Colors.blue,
+              ),
+              SizedBox(height: 12),
             ],
             ButtonWidget(
               title: "Pick Image",
-              color: Colors.green,
               onTap: isLoading ? null : _compressImage,
             ),
           ],
@@ -126,12 +133,12 @@ class _ImageCompressState extends State<ImageCompress> {
         }
       }
     } catch (e, trace) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Could not compress image'),
-        ),
+      CustomNotification.show(
+        context,
+        "Could not compress image",
+        isSuccess: false,
       );
+
       print(trace);
     } finally {
       setState(() {

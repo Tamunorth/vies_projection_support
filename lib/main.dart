@@ -17,8 +17,48 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.plusJakartaSansTextTheme(),
-      ),
+          textTheme: GoogleFonts.poppinsTextTheme().copyWith(
+            bodyLarge: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+            bodyMedium: GoogleFonts.poppins(color: Colors.white),
+          ),
+          scrollbarTheme: ScrollbarThemeData(
+            thumbColor: WidgetStatePropertyAll(Colors.grey.withOpacity(0.5)),
+            trackColor: MaterialStateProperty.all(Colors.transparent),
+            trackBorderColor: MaterialStateProperty.all(Colors.transparent),
+            radius: Radius.circular(0),
+            thickness: MaterialStateProperty.all(8),
+            thumbVisibility: MaterialStateProperty.all(true),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Color(0xff262626),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            labelStyle: TextStyle(color: Colors.white),
+            contentPadding: EdgeInsets.all(24.0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide.none,
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: Colors.red),
+            ),
+          )),
       home: HomePageAlt(),
     );
   }
@@ -46,14 +86,22 @@ void main(List<String> args) async {
     ));
 
     // Use it only after calling `hiddenWindowAtLaunch`
-    windowManager.waitUntilReadyToShow().then((_) async {
+    // windowManager.waitUntilReadyToShow().then((_) async {
 // Hide window title bar
-      await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-      await windowManager.setFullScreen(true);
-      await windowManager.center();
-      await windowManager.show();
-      await windowManager.setSkipTaskbar(false);
-    });
+
+    // });
+
+    // WindowOptions windowOptions = WindowOptions(
+    //   size: Size(800, 600),
+    //   center: true,
+    //   backgroundColor: Colors.transparent,
+    //   skipTaskbar: false,
+    //   titleBarStyle: TitleBarStyle.hidden,
+    // );
+    // await windowManager.show();
+    // await windowManager.setSkipTaskbar(false);
+    // await windowManager.setFullScreen(true);
+    // await windowManager.focus();
   } else {
     if (!hasInitWindowManger) {
       await windowManager.ensureInitialized();

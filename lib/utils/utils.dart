@@ -11,6 +11,7 @@ import 'package:process_run/process_run.dart';
 import 'package:untitled/block_input.dart';
 import 'package:untitled/utils/local_storage.dart';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:untitled/utils/snackbar.dart';
 import 'package:untitled/utils/win_automation.dart';
 import '../pages/lyrics/lyrics_notifier.dart';
 
@@ -104,10 +105,9 @@ class EasyUtils {
 
     // Copy the indented text to the clipboard
     await Clipboard.setData(useful).then((value) async {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Text Formatted'),
-        ),
+      CustomNotification.show(
+        context,
+        "Text Formatted",
       );
 
       //UPDATE Lyrics View

@@ -231,13 +231,9 @@ class TimerTextField extends StatelessWidget {
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
-            fillColor: Colors.white,
             contentPadding:
                 EdgeInsets.symmetric(vertical: paddingVert, horizontal: 24),
             filled: true,
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-            ),
           ),
           keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[

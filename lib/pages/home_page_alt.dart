@@ -12,6 +12,9 @@ import 'lyrics/lyrics_tab.dart';
 
 ValueNotifier<int> globalIndentationValue = ValueNotifier(1);
 
+const scaffoldColor = Color(0xff141414);
+const accentColor = Color(0xff262626);
+
 // Navigation Item Model
 class NavItem {
   final String title;
@@ -53,11 +56,11 @@ class _HomePageAltState extends State<HomePageAlt> {
     //   icon: Icons.web,
     //   page: ExampleBrowser(),
     // ),
-    NavItem(
-      title: 'Timer',
-      icon: Icons.timer,
-      page: const TimerTab(),
-    ),
+    // NavItem(
+    //   title: 'Timer',
+    //   icon: Icons.timer,
+    //   page: const TimerTab(),
+    // ),
     NavItem(
       title: 'Image Compress',
       icon: Icons.image,
@@ -109,12 +112,12 @@ class _HomePageAltState extends State<HomePageAlt> {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xff141414),
+      backgroundColor: scaffoldColor,
       body: Row(
         children: [
           Container(
             decoration: const BoxDecoration(
-              color: Color(0xff262626),
+              color: accentColor,
             ),
             width: 300,
             height: MediaQuery.sizeOf(context).height,
