@@ -1,4 +1,4 @@
-import 'package:vies_projection_support/block_input.dart';
+import 'package:untitled/block_input.dart';
 import 'package:win32/win32.dart';
 import 'package:ffi/ffi.dart';
 import 'dart:ffi';
@@ -405,8 +405,7 @@ class EasyWorshipAutomation {
     if (newButton == null) return false;
 
     clickControl(newButton);
-    await Future.delayed(
-        Duration(milliseconds: 200)); // Wait for menu to appear
+    await Future.delayed(Duration(milliseconds: 50)); // Wait for menu to appear
     return true;
   }
 
@@ -444,11 +443,6 @@ class EasyWorshipAutomation {
     await Future.delayed(Duration(milliseconds: 300));
     return true;
   }
-
-// Usage:
-// await clickMenuItemByIndex(0);  // First item
-// await clickMenuItemByIndex(1);  // Second item
-// await clickMenuItemByIndex(2);  // Third item
 
 // Combined function: Open the New Song dialog
   Future<bool> openNewSongDialog() async {

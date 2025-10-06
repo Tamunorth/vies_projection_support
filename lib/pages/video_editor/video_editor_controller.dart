@@ -14,8 +14,8 @@
 // import 'package:path/path.dart' as path;
 // import 'package:path_provider/path_provider.dart';
 // import 'package:process_run/process_run.dart';
-// import 'package:vies_projection_support/pages/video_editor/ndi_handler.dart';
-// import 'package:vies_projection_support/pages/video_editor/ndi_native_bindings.dart';
+// import 'package:untitled/pages/video_editor/ndi_handler.dart';
+// import 'package:untitled/pages/video_editor/ndi_native_bindings.dart';
 //
 // class VideoEditorController extends ChangeNotifier {
 //   Player player = Player();

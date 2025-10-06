@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:vies_projection_support/pages/image_compress/image_compress.dart';
-import 'package:vies_projection_support/pages/qr_code/qr_generator.dart';
-import 'package:vies_projection_support/pages/settings/settings.dart';
-import 'package:vies_projection_support/pages/timer/timer_page.dart';
-import 'package:vies_projection_support/utils/local_storage.dart';
-import 'package:vies_projection_support/utils/utils.dart';
+import 'package:untitled/pages/image_compress/image_compress.dart';
+import 'package:untitled/pages/qr_code/qr_generator.dart';
+import 'package:untitled/pages/settings/settings.dart';
+import 'package:untitled/pages/timer/timer_page.dart';
+import 'package:untitled/utils/local_storage.dart';
+import 'package:untitled/utils/utils.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../utils/custom_nav_tile.dart';

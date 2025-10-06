@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
 // import 'package:media_kit_video/media_kit_video.dart';
-// import 'package:vies_projection_support/pages/video_editor/video_editor_controller.dart';
+// import 'package:untitled/pages/video_editor/video_editor_controller.dart';
 //
 // class NDIControls extends StatelessWidget {
 //   final VideoEditorController controller;

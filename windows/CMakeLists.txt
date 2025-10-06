@@ -108,18 +108,7 @@ install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
         CONFIGURATIONS Profile;Release
         COMPONENT Runtime)
 
-#
-install(FILES "${PROJECT_SOURCE_DIR}/dll/Processing.NDI.Lib.x64.dll"
-        DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
-        COMPONENT Runtime)
 
-#
-add_custom_target(copy_ndi_dll ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${PROJECT_SOURCE_DIR}/dll/Processing.NDI.Lib.x64.dll"
-        "$<TARGET_FILE_DIR:${BINARY_NAME}>"
-        DEPENDS ${BINARY_NAME}
-)
 ## Add the block_input.cpp to the executable
 #add_library(block_input SHARED
 #        "block_input/block_input.cpp"

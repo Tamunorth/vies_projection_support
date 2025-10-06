@@ -6,7 +6,7 @@ import 'dart:ffi' as ffi;
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:vies_projection_support/pages/video_editor/ndi_native_bindings.dart';
+import 'package:untitled/pages/video_editor/ndi_native_bindings.dart';
 
 class NDIHandler {
   final NDIBindings _ndiBindings;
