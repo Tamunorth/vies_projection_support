@@ -1,3 +1,4 @@
+import 'package:vies_projection_support/block_input.dart';
 import 'package:win32/win32.dart';
 import 'package:ffi/ffi.dart';
 import 'dart:ffi';
@@ -34,7 +35,7 @@ class EasyWorshipAutomation {
   // Find the  Editor dialog
   int findEditorDialog() {
     final titles = [
-      'EasyWorship -',
+      'EasyWorship - Default',
     ];
 
     for (final title in titles) {
@@ -169,7 +170,7 @@ class EasyWorshipAutomation {
   }
 
   // Main automation method
-  Future<bool> fillSongDialog(String title) async {
+  Future<bool> fillSongDialog(String title, {Duration? delay}) async {
     final dialog = findSongEditorDialog();
 
     if (dialog == 0) {
@@ -179,7 +180,11 @@ class EasyWorshipAutomation {
 
     print('Found dialog: $dialog');
 
-    await Future.delayed(Duration(milliseconds: 200));
+    await Future.delayed(delay ?? Duration(milliseconds: 200));
+
+    await pasteClipboard();
+
+    // await Future.delayed(delay ?? Duration(milliseconds: 200));
 
     // Find and fill title field
     final titleField = findTitleField(dialog);
@@ -207,5 +212,290 @@ class EasyWorshipAutomation {
     clickControl(okButton);
 
     return true;
+  }
+
+  /////
+
+// Helper: Find window by partial title match
+  int? findWindowByPartialTitle(String partialTitle) {
+    final List<int> foundWindows = [];
+
+    int enumWindowProc(int hwnd, int lParam) {
+      final text = getWindowText(hwnd);
+      if (text.contains(partialTitle)) {
+        foundWindows.add(hwnd);
+        return FALSE; // Stop enumeration once found
+      }
+      return TRUE;
+    }
+
+    final callback = NativeCallable<WNDENUMPROC>.isolateLocal(
+      enumWindowProc,
+      exceptionalReturn: FALSE,
+    );
+
+    EnumWindows(callback.nativeFunction, 0);
+    callback.close();
+
+    if (foundWindows.isNotEmpty) {
+      print('Found window containing "$partialTitle": ${foundWindows.first}');
+      return foundWindows.first;
+    }
+
+    print('Window containing "$partialTitle" not found');
+    return null;
+  }
+
+// Find the main EasyWorship window (works with any profile)
+  int? findEasyWorshipMainWindow() {
+    return findWindowByPartialTitle('EasyWorship');
+  }
+
+// Updated findNewButton using the new helper
+  int? findNewButton() {
+    // Find the main EasyWorship window
+    final mainWindow = findEasyWorshipMainWindow();
+
+    if (mainWindow == null || mainWindow == 0) {
+      print('EasyWorship main window not found');
+      return null;
+    }
+
+    print(
+        'Found EasyWorship window: $mainWindow (${getWindowText(mainWindow)})');
+
+    final children = getAllChildWindows(mainWindow);
+    print('Found ${children.length} child windows');
+
+    for (final child in children) {
+      final text = getWindowText(child);
+
+      // Look for control with "New" text
+      if (text == 'New') {
+        print('Found New button: $child');
+        return child;
+      }
+    }
+
+    print('New button not found');
+    return null;
+  }
+
+// Find the "New song..." menu item after clicking New
+  int? findNewSongMenuItem1() {
+    // Menu items are typically in a popup window
+    // We need to find all top-level windows and look for menu
+    final menuWindow =
+        FindWindow('#32768'.toNativeUtf16(), nullptr); // Standard menu class
+
+    print('Checking menu item: $menuWindow');
+
+    if (menuWindow != 0) {
+      final children = getAllChildWindows(menuWindow);
+
+      print('Found ${children} menu items');
+
+      for (final child in children) {
+        final text = getWindowText(child);
+        print('Checking menu item: $text');
+
+        if (text.contains('New Song')) {
+          print('Found New song menu item: $child');
+          return child;
+        }
+      }
+    }
+
+    // Alternative: enumerate all windows to find the menu item
+    return _findWindowByText('New song...');
+  }
+
+// Find menu window right after clicking New
+  int? findMenuWindow() {
+    final List<int> menuWindows = [];
+
+    int enumWindowProc(int hwnd, int lParam) {
+      final className = getClassName(hwnd);
+
+      // Menu class is typically "#32768"
+      if (className == '#32768') {
+        // Check if it's visible
+        if (IsWindowVisible(hwnd) == TRUE) {
+          menuWindows.add(hwnd);
+        }
+      }
+      return TRUE;
+    }
+
+    final callback = NativeCallable<WNDENUMPROC>.isolateLocal(
+      enumWindowProc,
+      exceptionalReturn: FALSE,
+    );
+
+    EnumWindows(callback.nativeFunction, 0);
+    callback.close();
+
+    if (menuWindows.isNotEmpty) {
+      print('Found ${menuWindows} menu windows');
+      return menuWindows.last; // Return the most recent one
+    }
+
+    return null;
+  }
+
+// Helper: Find any window by text
+  int? _findWindowByText(String searchText) {
+    final List<int> foundWindows = [];
+
+    int enumWindowProc(int hwnd, int lParam) {
+      final text = getWindowText(hwnd);
+      if (text.contains(searchText)) {
+        foundWindows.add(hwnd);
+      }
+      return TRUE;
+    }
+
+    final callback = NativeCallable<WNDENUMPROC>.isolateLocal(
+      enumWindowProc,
+      exceptionalReturn: FALSE,
+    );
+
+    EnumWindows(callback.nativeFunction, 0);
+    callback.close();
+
+    if (foundWindows.isNotEmpty) {
+      print('Found window with text "$searchText": ${foundWindows.first}');
+      return foundWindows.first;
+    }
+
+    // If not found at top level, search all child windows of all windows
+    final List<int> allWindows = [];
+
+    int enumAllWindows(int hwnd, int lParam) {
+      allWindows.add(hwnd);
+      return TRUE;
+    }
+
+    final callback2 = NativeCallable<WNDENUMPROC>.isolateLocal(
+      enumAllWindows,
+      exceptionalReturn: FALSE,
+    );
+
+    EnumWindows(callback2.nativeFunction, 0);
+    callback2.close();
+
+    for (final window in allWindows) {
+      final children = getAllChildWindows(window);
+      for (final child in children) {
+        final text = getWindowText(child);
+        if (text.contains(searchText)) {
+          print('Found child window with text "$searchText": $child');
+          return child;
+        }
+      }
+    }
+
+    print('Window with text "$searchText" not found');
+    return null;
+  }
+
+// Click the New button
+  Future<bool> clickNewButton() async {
+    final newButton = findNewButton();
+    if (newButton == null) return false;
+
+    clickControl(newButton);
+    await Future.delayed(
+        Duration(milliseconds: 200)); // Wait for menu to appear
+    return true;
+  }
+
+  // Click menu item by sending WM_COMMAND
+  Future<bool> clickNewSongMenuItemAdvanced() async {
+    await Future.delayed(Duration(milliseconds: 200));
+
+    final menuWindow = findMenuWindow();
+    if (menuWindow != null) {
+      print('Found menu window: $menuWindow');
+
+      /// Click the second item (index 1)
+      await clickMenuItemByIndex(index: 1, currentWindow: menuWindow);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  // Click any menu item by index (0 = first, 1 = second, etc.)
+  Future<bool> clickMenuItemByIndex(
+      {required int index, required int currentWindow}) async {
+    // Press DOWN arrow 'index + 1' times
+    for (int i = 0; i <= index; i++) {
+      await ViesBlockInput.downKey();
+      await Future.delayed(Duration(milliseconds: 50));
+    }
+
+    // await Future.delayed(Duration(milliseconds: 100));
+
+    ///enter
+    PostMessage(currentWindow, WM_KEYDOWN, VK_RETURN, 0);
+
+    await Future.delayed(Duration(milliseconds: 300));
+    return true;
+  }
+
+// Usage:
+// await clickMenuItemByIndex(0);  // First item
+// await clickMenuItemByIndex(1);  // Second item
+// await clickMenuItemByIndex(2);  // Third item
+
+// Combined function: Open the New Song dialog
+  Future<bool> openNewSongDialog() async {
+    final clicked = await clickNewButton();
+    if (!clicked) {
+      print('Failed to click New button');
+      return false;
+    }
+
+    print('Clicking New song menu item...');
+    final menuClicked = await clickNewSongMenuItemAdvanced();
+    if (!menuClicked) {
+      print('Failed to click New song menu item');
+      return false;
+    }
+
+    print('New song dialog should be open');
+    return true;
+  }
+
+  Future<void> pasteClipboard() async {
+    // Create input structures for Ctrl+V
+    final inputs = calloc<INPUT>(4);
+
+    // Press Ctrl
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = VK_CONTROL;
+    inputs[0].ki.dwFlags = 0;
+
+    // Press V
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = VK_V;
+    inputs[1].ki.dwFlags = 0;
+
+    // Release V
+    inputs[2].type = INPUT_KEYBOARD;
+    inputs[2].ki.wVk = VK_V;
+    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // Release Ctrl
+    inputs[3].type = INPUT_KEYBOARD;
+    inputs[3].ki.wVk = VK_CONTROL;
+    inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(4, inputs, sizeOf<INPUT>());
+    calloc.free(inputs);
+
+    await Future.delayed(Duration(milliseconds: 100));
   }
 }

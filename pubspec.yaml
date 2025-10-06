@@ -36,7 +36,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   process_run:
-  flutter_auto_gui:
   google_fonts:
   desktop_multi_window:
   stop_watch_timer:

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-class BlockInput {
+class ViesBlockInput {
   static const MethodChannel _channel =
       MethodChannel('com.example.untitled/inputBlocker');
 

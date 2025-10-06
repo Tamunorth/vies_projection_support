@@ -7,7 +7,6 @@ import 'package:collection/collection.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_auto_gui/flutter_auto_gui.dart';
 import 'package:process_run/process_run.dart';
 import 'package:vies_projection_support/block_input.dart';
 import 'package:vies_projection_support/utils/local_storage.dart';
@@ -27,9 +26,6 @@ class EasyUtils {
   final automation = EasyWorshipAutomation();
 
   Future<void> createSongFile() async {
-
-
-    
     final duration = localStore.get('duration');
     final delayDuration = duration == null
         ? Duration(milliseconds: 50)
@@ -37,118 +33,16 @@ class EasyUtils {
     await Shell().run(
         'start "" "C:\\Program Files (x86)\\Softouch\\EasyWorship 7\\EasyWorship.exe"');
 
-    // await BlockInput.blockInput();
-
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
 
-    final clipboardText = clipboardData?.text?.split('\n').firstOrNull;
+    final songTitle = clipboardData?.text?.split('\n').firstOrNull;
 
-    // List<String>? chars = clipboardText?.characters.toList();
+    await automation.openNewSongDialog();
 
-    // mouse move function
-    await FlutterAutoGUI.moveTo(
-      point: const Point(32, 70),
-      duration: const Duration(microseconds: 1),
-    );
+    // await Future.delayed(delayDuration);
 
-    await Future.delayed(delayDuration);
-
-    await FlutterAutoGUI.click(
-      button: MouseButton.left, clicks: 1,
-      // interval: const Duration(milliseconds: 1),
-    );
-
-    // PASTE LYRIC
-
-    await Future.delayed(delayDuration);
-
-    // await FlutterAutoGUI.press(
-    //   key: 'down',
-    //   times: 2,
-    //   // interval: const Duration(microseconds: 1),
-    // );
-
-    //
-    await BlockInput.downKey();
-    await BlockInput.downKey();
-
-    await Future.delayed(delayDuration);
-
-    await FlutterAutoGUI.press(
-      key: 'enter',
-      interval: const Duration(microseconds: 1),
-    );
-    await Future.delayed(delayDuration);
-
-    // PASTE LYRICS
-    await FlutterAutoGUI.hotkey(
-      keys: ['ctrl', 'v'],
-      interval: const Duration(microseconds: 1),
-    );
-
-    await Future.delayed(delayDuration);
-
-    automation.fillSongDialog(clipboardText ?? '');
-
-    return;
-
-    await Future.delayed(delayDuration);
-
-    await FlutterAutoGUI.moveTo(
-      point: const Point(320, 76),
-      duration: const Duration(microseconds: 1),
-    );
-
-    await Future.delayed(delayDuration);
-
-    await FlutterAutoGUI.click(
-      button: MouseButton.left,
-    );
-    //
-    // await FlutterAutoGUI.hotkey(
-    //   keys: ['ctrl', 'v'],
-    //   interval: const Duration(microseconds: 1),
-    // );
-
-    dev.log("title: $clipboardText");
-
-    ///PASTE JUST THE FIRST LINE AS TITLE
-    await FlutterAutoGUI.write(
-      text: clipboardText ?? '',
-      omitInvalid: true,
-    );
-
-    await Future.delayed(delayDuration);
-
-    ///CLICK OK
-    await FlutterAutoGUI.press(
-      key: 'tab',
-      times: 6,
-      interval: const Duration(microseconds: 1),
-    );
-
-    await FlutterAutoGUI.press(
-      key: 'enter',
-      times: 1,
-      interval: const Duration(microseconds: 1),
-    );
-
-    await FlutterAutoGUI.moveTo(
-      point: const Point(1275, 701),
-      duration: const Duration(microseconds: 1),
-    );
-
-    await Future.delayed(delayDuration);
-
-    await FlutterAutoGUI.click(
-      button: MouseButton.left,
-    );
-    await Future.delayed(delayDuration);
-
-    ///
-    if (localStore.getBool('sendLyrics')) {
-      await FlutterAutoGUI.press(key: 'enter', times: 3);
-    }
+    await automation.fillSongDialog(songTitle ?? '', delay: delayDuration);
+    ;
   }
 
   String cleanLyrics(String input) {
@@ -167,7 +61,7 @@ class EasyUtils {
       RegExp(r':'),
       // Removes standalone colons
 
-      RegExp(r'[.,()\[\]{}]', caseSensitive: false),
+      RegExp(r'[.,\[\]{}]', caseSensitive: false),
       // Remove punctuation like (), [], {}, and ...
     ];
 
