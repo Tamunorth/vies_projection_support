@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' show Random;
 
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:untitled/core/analytics.dart';
+import 'dart:developer';
 
 Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
   final String filePath = imageFile.path;
@@ -43,6 +44,8 @@ Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
     'compressed_path': compressedFile.path,
   };
 
+  log('time taken details: ${stopwatch.elapsedMilliseconds} ms');
+
   // Fire the analytics event with all details
   Analytics.instance.trackEventWithProperties(
     "image_compression_details",
@@ -57,137 +60,107 @@ Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
   return compressedFile;
 }
 
+/// Compresses an image by iteratively resizing it by 20% until it reaches
+/// minimum dimensions, then converting to JPG and reducing quality.
+///
+/// This function provides detailed logs to track the compression process.
+/// It first attempts to meet the size constraints by resizing alone. If that
+/// fails, it switches to a more aggressive JPG quality reduction phase.
+///
+/// [params] A map containing:
+/// - 'filePath': The path to the image file to compress.
+/// - 'maxSizeInBytes': The target maximum file size in bytes.
 Future<Map<String, dynamic>?> _compressImage(
-    Map<String, dynamic> params) async {
-  // Receive the file path and max size
+  Map<String, dynamic> params,
+) async {
   final String filePath = params['filePath'];
   final int maxSizeInBytes = params['maxSizeInBytes'];
 
-  // Read the file inside the isolate to avoid blocking the UI thread
   final File imageFile = File(filePath);
   final Uint8List imageBytes = await imageFile.readAsBytes();
 
-  final img.Image? image = img.decodeImage(imageBytes);
-  if (image == null) {
-    return null; // Could not decode image
-  }
-
-  // Define minimum dimensions for YouTube thumbnails
-  const int minWidth = 1280;
-  const int minHeight = 720;
-
-  // Define initial quality and resize factor
-  int quality = 100;
-  double resizeFactor = 1.0;
-
-  // Smaller steps for finer control and getting closer to target size
-  const double resizeStep =
-      0.1; // resizeStep reduction percentage per iteration
-  const int qualityStep = 5; // qualityStep reduction
-
-  Uint8List? result;
-  int currentSize = imageBytes.length;
-
-  // Detect the image format
-  bool isPng = filePath.toLowerCase().endsWith('.png');
-  bool convertedToJpg = false;
-
-  // Check if the initial image size is already below the desired size
   if (imageBytes.length <= maxSizeInBytes) {
     return {
       'bytes': imageBytes,
-      'extension': isPng ? 'png' : 'jpg',
+      'extension': filePath.toLowerCase().endsWith('.png') ? 'png' : 'jpg',
     };
   }
 
-  // Check if the image is already smaller than minimum dimensions
-  if (image.width < minWidth || image.height < minHeight) {
-    // Try to compress with quality reduction only
-    if (!isPng) {
-      while (currentSize > maxSizeInBytes && quality > 5) {
-        quality -= qualityStep;
-        result = img.encodeJpg(image, quality: quality);
-        currentSize = result.length;
-      }
+  final img.Image? originalImage = img.decodeImage(imageBytes);
+  if (originalImage == null) {
+    log('Failed to decode image.');
+    return null;
+  }
+
+  const int minWidth = 1280;
+  const int minHeight = 720;
+  final bool isOriginalPng = filePath.toLowerCase().endsWith('.png');
+  img.Image currentImage = originalImage;
+  Uint8List? resultBytes;
+
+  log('Starting compression for $filePath');
+  log('Original dims: ${originalImage.width}x${originalImage.height}, '
+      'size: ${imageBytes.length} bytes');
+
+  // --- Phase 1: Iterative Resizing by 20% ---
+  double resizeFactor = 1.0;
+  while (true) {
+    // Check size at the current dimension
+    if (isOriginalPng) {
+      resultBytes = img.encodePng(currentImage);
+    } else {
+      resultBytes = img.encodeJpg(currentImage, quality: 95);
+    }
+
+    log('Current dims: ${currentImage.width}x${currentImage.height}, '
+        'size: ${resultBytes.length} bytes');
+
+    if (resultBytes.length <= maxSizeInBytes) {
+      log('Image is now under the size limit. Success!');
       return {
-        'bytes': result ?? imageBytes,
-        'extension': 'jpg',
+        'bytes': resultBytes,
+        'extension': isOriginalPng ? 'png' : 'jpg',
       };
     }
-    // If PNG and can't compress further, convert to JPG
-    while (currentSize > maxSizeInBytes && quality > 5) {
-      quality -= qualityStep;
-      result = img.encodeJpg(image, quality: quality);
-      currentSize = result.length;
-      convertedToJpg = true;
-    }
-    return {
-      'bytes': result ?? imageBytes,
-      'extension': convertedToJpg ? 'jpg' : 'png',
-    };
-  }
 
-  // Compress the image until it meets the size requirement
-  while (currentSize > maxSizeInBytes) {
-    // Calculate the next resize dimensions
-    int newWidth = (image.width * (resizeFactor - resizeStep)).toInt();
-    int newHeight = (image.height * (resizeFactor - resizeStep)).toInt();
+    resizeFactor *= 0.70; // Reduce by 25% each iteration
 
-    // Check if resizing would make the image smaller than minimum dimensions
-    bool canResize = newWidth >= minWidth && newHeight >= minHeight;
+    final int nextWidth = (originalImage.width * resizeFactor).toInt();
+    final int nextHeight =
+        (originalImage.height * (nextWidth / originalImage.width)).toInt();
 
-    // Adjust the resize factor and quality
-    if (!isPng && quality > 5) {
-      quality -= qualityStep;
-    } else if (canResize) {
-      resizeFactor -= resizeStep;
-      quality = 100;
-    } else {
-      // Can't resize further
-      if (!isPng && quality > 5) {
-        quality -= qualityStep;
-      } else if (isPng) {
-        // PNG hit minimum dimensions - convert to JPG and continue compressing
-        print(
-            'PNG cannot be compressed further by resizing. Converting to JPG...');
-        isPng = false;
-        convertedToJpg = true;
-        quality = 95; // Start with high quality for converted image
-      } else {
-        print(
-            'Cannot compress further without going below minimum dimensions.');
-        break;
-      }
-    }
-
-    // Resize the image if allowed
-    img.Image processedImage;
-    if (resizeFactor < 1.0 && canResize) {
-      processedImage = img.copyResize(image,
-          width: (image.width * resizeFactor).toInt(),
-          height: (image.height * resizeFactor).toInt(),
-          maintainAspect: true);
-    } else {
-      processedImage = image;
-    }
-
-    // Encode the processed image
-    if (isPng) {
-      result = img.encodePng(processedImage);
-    } else {
-      result = img.encodeJpg(processedImage, quality: quality);
-    }
-
-    currentSize = result.length;
-
-    // Prevent infinite loop - check if we've reached minimum thresholds
-    if (resizeFactor <= resizeStep && quality <= 5) {
+    if (nextWidth < minWidth || nextHeight < minHeight) {
+      log('Next resize would go below minimums. Stopping resize loop.');
       break;
     }
+
+    log('Resizing to ${nextWidth}x${nextHeight}...');
+    currentImage = img.copyResize(
+      originalImage, // Always resize from original for best quality
+      width: nextWidth,
+      maintainAspect: true,
+    );
   }
 
+  // --- Phase 2: Convert to JPG and Reduce Quality ---
+  log('Reached minimum size. Starting JPG quality reduction.');
+  int quality = 95;
+  const int qualityStep = 5;
+
+  while (quality > 5) {
+    resultBytes = img.encodeJpg(currentImage, quality: quality);
+    log('Trying JPG quality $quality%. Size: ${resultBytes.length} bytes');
+
+    if (resultBytes.length <= maxSizeInBytes) {
+      log('Found suitable quality at $quality%. Success!');
+      return {'bytes': resultBytes, 'extension': 'jpg'};
+    }
+    quality -= qualityStep;
+  }
+
+  log('Could not get under size limit. Returning best effort.');
   return {
-    'bytes': result,
-    'extension': convertedToJpg || !isPng ? 'jpg' : 'png',
+    'bytes': resultBytes, // This will be the smallest version
+    'extension': 'jpg',
   };
 }

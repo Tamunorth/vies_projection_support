@@ -138,4 +138,6 @@ inno_bundle:
   publisher: Tamunor
   name: Vies Projection Support
   app_version: 1.0.2
+  installer_icon: assets/logo.ico
+  uninstaller_icon: assets/logo.ico
   sign_tool:

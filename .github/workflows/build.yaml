@@ -28,6 +28,12 @@ jobs:
         # thanks to https://github.com/actions/runner/issues/2224#issuecomment-1289925992
         run: echo $(dart run inno_bundle:build --envs --no-hf) | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
 
+
+    # --- ADD THIS DEBUGGING STEP ---
+      - name: Debug - List generated files
+        run: ls -R ./build/windows/x64
+        shell: pwsh # Use PowerShell to get a recursive list
+
       - name: Build installer
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
