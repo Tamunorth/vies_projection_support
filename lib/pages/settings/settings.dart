@@ -114,7 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     // Update initial values after saving
-    _initialDuration = durationTimer.text.isEmpty ? '50' : durationTimer.text;
+    _initialDuration = durationTimer.text.isEmpty ? '250' : durationTimer.text;
     _initialIntentation = intentation.text.isEmpty ? '2' : intentation.text;
     _initialScreenWidth = screenWidth.text.isEmpty ? '1920' : screenWidth.text;
     _initialScreenHeight =
