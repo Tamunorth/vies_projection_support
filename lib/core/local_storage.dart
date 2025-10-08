@@ -21,7 +21,7 @@ class LocalStore {
     await prefs.setBool(key, value);
   }
 
-  bool getBool(String key) {
-    return prefs.getBool(key) ?? false;
+  bool getBool(String key, {bool defaultValue = false}) {
+    return prefs.getBool(key) ?? defaultValue;
   }
 }

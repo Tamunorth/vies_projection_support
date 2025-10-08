@@ -19,20 +19,22 @@ class ButtonWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: InkWell(
-        onTap: () {
-          Analytics.instance.trackEventWithProperties(
-            "button_tapped",
-            {
-              'button_title': title,
-            },
-          );
-          onTap?.call();
-        },
+        onTap: onTap == null
+            ? null
+            : () {
+                Analytics.instance.trackEventWithProperties(
+                  "button_tapped",
+                  {
+                    'button_title': title,
+                  },
+                );
+                onTap?.call();
+              },
         child: Container(
           height: 55,
           width: 250,
           decoration: BoxDecoration(
-            color: color,
+            color: onTap == null ? Colors.grey : color,
           ),
           child: Center(
             child: Text(

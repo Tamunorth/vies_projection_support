@@ -251,6 +251,8 @@ class EasyWorshipAutomation {
 
     await Future.delayed(delay ?? Duration(milliseconds: 200));
 
+    await ViesBlockInput.downKey();
+
     await pasteClipboard();
 
     // Find and fill title field

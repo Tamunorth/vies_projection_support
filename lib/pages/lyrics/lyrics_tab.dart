@@ -99,9 +99,12 @@ class _LyricsTabState extends State<LyricsTab> {
             ButtonWidget(
               title: 'Format Text',
               onTap: () async {
+                final openEasyWorship =
+                    localStore.getBool('openEasyWorship', defaultValue: true);
+
                 lyricsNotifier.formattedText.value = await utils.copyClipboard(
                       context,
-                      createSong: localStore.getBool('openEasyWorship'),
+                      createSong: openEasyWorship,
                       indentation: int.parse(
                         lyricsNotifier.indentCtrl.text.isNotEmpty
                             ? lyricsNotifier.indentCtrl.text
