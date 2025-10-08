@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lukehog/lukehog.dart';
 import 'package:untitled/pages/lyrics/lyrics_notifier.dart';
 import 'package:untitled/pages/lyrics/lyrics_textfield.dart';
-import 'package:untitled/utils/local_storage.dart';
-import 'package:untitled/utils/utils.dart';
+import 'package:untitled/core/local_storage.dart';
+import 'package:untitled/core/utils.dart';
 
-import '../../utils/button_widget.dart';
+import '../../shared/button_widget.dart';
 import '../timer/timer_page.dart';
 
 class LyricsTab extends StatefulWidget {
@@ -12,6 +13,8 @@ class LyricsTab extends StatefulWidget {
     super.key,
     // required this.indetationVal,
   });
+
+  static final pageId = 'lyrics_tab';
 
   // final String indetationVal;
 

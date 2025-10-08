@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/home_page_alt.dart';
+import 'package:untitled/pages/home_page.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
-import 'package:untitled/utils/snackbar.dart';
+import 'package:untitled/shared/snackbar.dart';
 
-import '../../utils/button_widget.dart';
-import '../../utils/local_storage.dart';
+import '../../shared/button_widget.dart';
+import '../../core/local_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({super.key});
+
+  static final pageId = 'settings_page';
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();

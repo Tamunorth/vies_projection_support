@@ -3,14 +3,17 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/home_page_alt.dart';
-import 'package:untitled/utils/compress_image.dart';
-import 'package:untitled/utils/snackbar.dart';
+import 'package:untitled/core/analytics.dart';
+import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/core/compress_image.dart';
+import 'package:untitled/shared/snackbar.dart';
 
-import '../../utils/button_widget.dart';
+import '../../shared/button_widget.dart';
 
 class ImageCompress extends StatefulWidget {
   const ImageCompress({super.key});
+
+  static final pageId = 'image_compress_page';
 
   @override
   State<ImageCompress> createState() => _ImageCompressState();
@@ -57,6 +60,14 @@ class _ImageCompressState extends State<ImageCompress> {
               ],
             ),
             SizedBox(height: 24),
+            Text(
+              'Compress images to the right size for YouTube thumbnails',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.white),
+            ),
+            SizedBox(height: 24),
             if (img != null)
               Image.file(
                 img!,
@@ -97,7 +108,6 @@ class _ImageCompressState extends State<ImageCompress> {
       isLoading = true;
     });
     try {
-      // XFile? file = /*await picker.pickImage(source: ImageSource.gallery);*/
       File? fileImage;
       int maxSizeInBytes = 2 * 1024 * 1024;
 
@@ -134,7 +144,16 @@ class _ImageCompressState extends State<ImageCompress> {
           await img?.copy(outputFile);
         }
       }
+
+      Analytics.instance.trackEvent("image_compression_success");
     } catch (e, trace) {
+      Analytics.instance.trackEventWithProperties(
+        "image_compression_error",
+        {
+          'error': e.toString(),
+          'stack_trace': trace.toString(),
+        },
+      );
       CustomNotification.show(
         context,
         "Could not compress image",
@@ -143,6 +162,7 @@ class _ImageCompressState extends State<ImageCompress> {
 
       print(trace);
     } finally {
+      Analytics.instance.trackEvent("image_compression_completed");
       setState(() {
         isLoading = false;
       });

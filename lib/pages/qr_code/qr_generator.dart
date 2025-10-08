@@ -4,11 +4,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:untitled/pages/home_page_alt.dart';
-import 'package:untitled/utils/button_widget.dart';
+import 'package:untitled/core/analytics.dart';
+import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/shared/button_widget.dart';
 
 class QrGenerator extends StatefulWidget {
   const QrGenerator({super.key});
+
+  static final pageId = 'qr_generator_page';
 
   @override
   State<QrGenerator> createState() => _QrGeneratorState();
@@ -37,6 +40,13 @@ class _QrGeneratorState extends State<QrGenerator> {
         );
         final file = File('$outputFile.png');
         file.writeAsBytesSync(capturedImage);
+
+        Analytics.instance.trackEventWithProperties(
+          "qr_code_exported",
+          {
+            'file_path': outputFile.toString(),
+          },
+        );
 
         // final newImage = await file.copy('$outputFile.png');
       }

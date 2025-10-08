@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/core/analytics.dart';
 import 'package:untitled/pages/image_compress/image_compress.dart';
 import 'package:untitled/pages/qr_code/qr_generator.dart';
 import 'package:untitled/pages/settings/settings.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
-import 'package:untitled/utils/local_storage.dart';
-import 'package:untitled/utils/utils.dart';
+import 'package:untitled/core/local_storage.dart';
+import 'package:untitled/core/utils.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../utils/custom_nav_tile.dart';
+import '../shared/custom_nav_tile.dart';
 import 'lyrics/lyrics_tab.dart';
 
 ValueNotifier<int> globalIndentationValue = ValueNotifier(1);
@@ -19,17 +20,21 @@ const accentColor = Color(0xff262626);
 class NavItem {
   final String title;
   final IconData icon;
+  final String pageId;
   final Widget page;
 
   const NavItem({
     required this.title,
     required this.icon,
     required this.page,
+    this.pageId = 'unknown_page',
   });
 }
 
 class HomePageAlt extends StatefulWidget {
   const HomePageAlt({super.key});
+
+  static final pageId = 'home_page';
 
   @override
   State<HomePageAlt> createState() => _HomePageAltState();
@@ -43,6 +48,7 @@ class _HomePageAltState extends State<HomePageAlt> {
   late final List<NavItem> navigationItems = [
     NavItem(
       title: 'Lyrics',
+      pageId: LyricsTab.pageId,
       icon: Icons.music_note,
       page: ValueListenableBuilder(
         valueListenable: globalIndentationValue,
@@ -62,12 +68,14 @@ class _HomePageAltState extends State<HomePageAlt> {
     //   page: const TimerTab(),
     // ),
     NavItem(
-      title: 'Image Compress',
+      title: 'YT Image Compress',
+      pageId: ImageCompress.pageId,
       icon: Icons.image,
       page: const ImageCompress(),
     ),
     NavItem(
       title: 'QR Generator',
+      pageId: QrGenerator.pageId,
       icon: Icons.image,
       page: const QrGenerator(),
     ),
@@ -83,6 +91,7 @@ class _HomePageAltState extends State<HomePageAlt> {
     // ),
     NavItem(
       title: 'Settings',
+      pageId: SettingsPage.pageId,
       icon: Icons.settings,
       page: SettingsPage(),
     ),
@@ -101,6 +110,10 @@ class _HomePageAltState extends State<HomePageAlt> {
           : '1',
     );
     loadScreenDimensions();
+
+    Analytics.instance.trackScreen(
+      HomePageAlt.pageId,
+    );
   }
 
   @override
@@ -140,7 +153,12 @@ class _HomePageAltState extends State<HomePageAlt> {
                         return MyRadioListTile(
                           value: index,
                           groupValue: _value,
-                          onChanged: (value) => setState(() => _value = value!),
+                          onChanged: (value) {
+                            Analytics.instance.trackScreen(
+                              item.pageId,
+                            );
+                            setState(() => _value = value!);
+                          },
                           title: item.title,
                           icon: item.icon,
                         );

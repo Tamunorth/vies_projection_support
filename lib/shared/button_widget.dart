@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/core/analytics.dart';
 
 class ButtonWidget extends StatelessWidget {
   const ButtonWidget({
@@ -18,7 +19,15 @@ class ButtonWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          Analytics.instance.trackEventWithProperties(
+            "button_tapped",
+            {
+              'button_title': title,
+            },
+          );
+          onTap?.call();
+        },
         child: Container(
           height: 55,
           width: 250,

@@ -3,12 +3,11 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+/// A utility class to enter to down key reliably on keyboards with or without the number pad
+///
 class ViesBlockInput {
   static const MethodChannel _channel =
       MethodChannel('com.example.untitled/inputBlocker');
-
-  // Get battery level.
-  String _batteryLevel = 'Unknown battery level.';
 
   static Future<void> downKey() async {
     try {

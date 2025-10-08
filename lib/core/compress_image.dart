@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+import 'package:untitled/core/analytics.dart';
 
 Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
   // Read the image from file
@@ -16,6 +17,13 @@ Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
     'maxSizeInBytes': maxSizeInBytes,
     'filePath': filePath,
   };
+
+  Analytics.instance.trackEventWithProperties("compress_image_started", {
+    'original_size_bytes': imageBytes.length,
+    'max_size_bytes': maxSizeInBytes,
+    'file_path': filePath,
+  });
+
   Uint8List? result = await compute(_compressImage, params);
 
   if (result == null) {

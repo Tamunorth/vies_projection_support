@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:untitled/core/analytics.dart';
 // import 'package:media_kit/media_kit.dart';
-import 'package:untitled/pages/home_page_alt.dart';
+import 'package:untitled/pages/home_page.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
-import 'package:untitled/utils/local_storage.dart';
+import 'package:untitled/core/local_storage.dart';
 import 'package:window_manager/window_manager.dart';
 
 bool hasInitWindowManger = false;
@@ -67,12 +69,16 @@ class MyApp extends StatelessWidget {
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // MediaKit.ensureInitialized();
-
   await localStore.init();
   // if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
   //   setWindowTitle('title here');
   // }
+
+  await Analytics.instance.initialize(
+    "cKIU1muejvW3PqS3",
+    debug: kDebugMode,
+    sessionExpiration: Duration(minutes: 30),
+  );
 
   if (args.firstOrNull == 'multi_window') {
     final windowId = int.parse(args[1]);

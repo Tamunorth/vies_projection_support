@@ -3,8 +3,9 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-import 'package:untitled/utils/button_widget.dart';
-import 'package:untitled/utils/utils.dart';
+import 'package:untitled/core/analytics.dart';
+import 'package:untitled/shared/button_widget.dart';
+import 'package:untitled/core/utils.dart';
 // import 'package:flutter_multi_window_example/event_widget.dart';
 
 class TimerTab extends StatefulWidget {
@@ -228,7 +229,18 @@ class TimerTextField extends StatelessWidget {
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
-          onChanged: onChanged,
+          onChanged: (value) {
+            if (onChanged != null) {
+              Analytics.instance.trackEventWithProperties(
+                "text_field_changed",
+                {
+                  'field': hint,
+                  'field_value': value,
+                },
+              );
+              onChanged!(minutesCtrl.text);
+            }
+          },
           decoration: InputDecoration(
             hintText: hint,
             contentPadding:
