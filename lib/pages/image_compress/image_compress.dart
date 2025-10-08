@@ -1,14 +1,22 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/utils/compress_image.dart';
-
-import '../../utils/button_widget.dart';
+import 'package:image/image.dart' as img_lib;
+import 'package:open_dir/open_dir.dart';
+import 'package:untitled/core/analytics.dart';
+import 'package:untitled/core/compress_image.dart';
+import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/shared/button_widget.dart';
+import 'package:untitled/shared/snackbar.dart';
+import 'package:path/path.dart' as p;
 
 class ImageCompress extends StatefulWidget {
   const ImageCompress({super.key});
+
+  static final pageId = 'image_compress_page';
 
   @override
   State<ImageCompress> createState() => _ImageCompressState();
@@ -16,7 +24,7 @@ class ImageCompress extends StatefulWidget {
 
 class _ImageCompressState extends State<ImageCompress> {
   File? img;
-
+  String? savedImagePath;
   bool isLoading = false;
 
   @override
@@ -24,52 +32,88 @@ class _ImageCompressState extends State<ImageCompress> {
     return DropTarget(
       onDragDone: (detail) async {
         final draggedFile = File(detail.files.first.path);
-
         await _compressImage(passedFile: draggedFile);
-        setState(() {});
-      },
-      onDragEntered: (detail) {
-        // setState(() {
-        //   _dragging = true;
-        // });
-      },
-      onDragExited: (detail) {
-        // setState(() {
-        //   _dragging = false;
-        // });
       },
       child: Container(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              'Drop Image Here',
+              style: Theme.of(context)
+                  .textTheme
+                  .displayMedium
+                  ?.copyWith(color: Colors.white),
+            ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'DRAG IMAGE HERE',
-                  style: Theme.of(context)
-                      .textTheme
-                      .displayLarge
-                      ?.copyWith(color: Colors.white),
-                ),
+                const SizedBox(height: 24),
               ],
             ),
+            Text(
+              'Compress images to the right size for YouTube thumbnails',
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.white),
+            ),
+            const SizedBox(height: 24),
             if (img != null)
-              Image.file(
-                img!,
-                width: 240,
-                height: 144,
+              MouseRegion(
+                cursor: savedImagePath != null
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.basic,
+                child: GestureDetector(
+                  onTap: savedImagePath == null
+                      ? null
+                      : () async {
+                          try {
+                            final directoryPath = p.dirname(savedImagePath!);
+                            await OpenDir().openNativeDir(
+                                path: directoryPath,
+                                highlightedFileName:
+                                    p.basename(savedImagePath!));
+                          } catch (e) {
+                            if (mounted) {
+                              CustomNotification.show(
+                                context,
+                                'Could not open file location.',
+                                isSuccess: false,
+                              );
+                            }
+                          }
+                        },
+                  child: Image.file(
+                    img!,
+                    width: 240,
+                    height: 144,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               )
             else
-              SizedBox(
+              const SizedBox(
                 width: 240,
-                height: 124,
-                child: Placeholder(),
+                height: 200,
+                child: Image(
+                    fit: BoxFit.cover,
+                    image: AssetImage('assets/image_placeholder.png')),
               ),
-            if (isLoading) CircularProgressIndicator.adaptive(),
+            const SizedBox(height: 12),
+            if (isLoading) ...[
+              CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+                strokeWidth: 5,
+                backgroundColor: accentColor,
+                trackGap: 12,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 12),
+            ],
             ButtonWidget(
               title: "Pick Image",
-              color: Colors.green,
               onTap: isLoading ? null : _compressImage,
             ),
           ],
@@ -78,60 +122,100 @@ class _ImageCompressState extends State<ImageCompress> {
     );
   }
 
+  /// Formats file size in bytes to a human-readable string (KB, MB, etc.).
+  String _formatBytes(int bytes, {int decimals = 2}) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
+  }
+
+  /// Handles the image selection, compression, and saving process.
   _compressImage({File? passedFile}) async {
     setState(() {
       isLoading = true;
+      savedImagePath = null;
     });
+
+    final stopwatch = Stopwatch()..start();
+
     try {
-      // XFile? file = /*await picker.pickImage(source: ImageSource.gallery);*/
       File? fileImage;
-      int maxSizeInBytes = 2 * 1024 * 1024;
+      const int maxSizeInBytes = 2 * 1024 * 1024;
 
-      img = null;
       if (passedFile == null) {
-        final file = await FilePicker.platform.pickFiles(type: FileType.image);
-
-        if (file?.files.single.path != null) {
-          fileImage = File(file!.files.single.path!);
-        }
-
-        if (fileImage != null) {
-          img = await compressImageToSize(fileImage, maxSizeInBytes);
+        final result =
+            await FilePicker.platform.pickFiles(type: FileType.image);
+        if (result?.files.single.path != null) {
+          fileImage = File(result!.files.single.path!);
         }
       } else {
-        img = await compressImageToSize(passedFile, maxSizeInBytes);
+        fileImage = passedFile;
       }
 
-      if (img != null) {
-        String? outputFile = await FilePicker.platform.saveFile(
-          dialogTitle: 'Please select an output file:',
-          allowedExtensions: ['png'],
-          fileName: 'compressed_${DateTime.now().millisecondsSinceEpoch}.png',
-        );
+      if (fileImage == null) return;
+      final compressedFile =
+          await compressImageToSize(fileImage, maxSizeInBytes);
+      if (compressedFile == null) {
+        throw Exception("Compression returned a null file.");
+      }
 
-        // Check if the user selected a location (didn't cancel)
-        if (outputFile != null) {
-          // FIX: Manually ensure the file path ends with the .png extension.
-          if (!outputFile.toLowerCase().endsWith('.png')) {
-            outputFile = '$outputFile.png';
-          }
+      setState(() {
+        img = compressedFile;
+      });
 
-          // Now, `outputFile` is guaranteed to have the correct extension.
-          await img?.copy(outputFile);
+      final originalPath = fileImage.path;
+      final directory = p.dirname(originalPath);
+      final extension = p.extension(originalPath).replaceAll('.', '');
+      final baseName = p.basenameWithoutExtension(originalPath);
+      final fileName = '${baseName}_compressed.$extension';
+
+      String? savePath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Please select an output file:',
+        initialDirectory: directory,
+        fileName: fileName,
+        allowedExtensions: [extension],
+      );
+
+      if (savePath != null) {
+        if (p.extension(savePath) != '.$extension') {
+          savePath = '$savePath.$extension';
+        }
+        await compressedFile.copy(savePath);
+
+        setState(() {
+          savedImagePath = savePath;
+        });
+
+        if (mounted) {
+          CustomNotification.show(
+            context,
+            "Compressed image saved! Click the preview to open.",
+            isSuccess: true,
+          );
         }
       }
     } catch (e, trace) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Could not compress image'),
-        ),
+      Analytics.instance.trackEventWithProperties(
+        "image_compression_error",
+        {
+          'error': e.toString(),
+          'stack_trace': trace.toString(),
+        },
       );
-      print(trace);
+      if (mounted) {
+        CustomNotification.show(
+          context,
+          "Could not compress image: ${e.toString()}",
+          isSuccess: false,
+        );
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 }

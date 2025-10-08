@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/pages/home_page.dart';
-import 'package:untitled/pages/home_page_alt.dart';
 import 'package:untitled/pages/timer/timer_page.dart';
+import 'package:untitled/shared/snackbar.dart';
 
-import '../../utils/button_widget.dart';
-import '../../utils/local_storage.dart';
+import '../../shared/button_widget.dart';
+import '../../core/local_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({super.key});
+
+  static final pageId = 'settings_page';
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -22,16 +24,111 @@ class _SettingsPageState extends State<SettingsPage> {
 
   final pref = localStore;
 
+  // Store initial values
+  late String _initialDuration;
+  late String _initialIntentation;
+  late String _initialScreenWidth;
+  late String _initialScreenHeight;
+  late bool _initialOpenEasyWorship;
+
+  // Current checkbox value
+  bool _openEasyWorship = false;
+
+  // Track if anything has changed
+  bool _hasChanges = false;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
-    durationTimer.text = pref.get('duration') ?? '';
+    // Load initial values
+    _initialDuration = pref.get('duration') ?? '';
+    _initialIntentation = pref.get('indent') ?? '';
+    _initialScreenWidth = pref.get('screenWidth') ?? '';
+    _initialScreenHeight = pref.get('screenHeight') ?? '';
+    _initialOpenEasyWorship = localStore.getBool('openEasyWorship');
 
-    intentation.text = pref.get('indent') ?? '';
-    screenWidth.text = pref.get('screenWidth') ?? '';
-    screenHeight.text = pref.get('screenHeight') ?? '';
+    // Set text controllers
+    durationTimer.text = _initialDuration;
+    intentation.text = _initialIntentation;
+    screenWidth.text = _initialScreenWidth;
+    screenHeight.text = _initialScreenHeight;
+    _openEasyWorship = _initialOpenEasyWorship;
+
+    // Add listeners to text fields
+    durationTimer.addListener(_checkForChanges);
+    intentation.addListener(_checkForChanges);
+    screenWidth.addListener(_checkForChanges);
+    screenHeight.addListener(_checkForChanges);
+  }
+
+  @override
+  void dispose() {
+    // Remove listeners
+    durationTimer.removeListener(_checkForChanges);
+    intentation.removeListener(_checkForChanges);
+    screenWidth.removeListener(_checkForChanges);
+    screenHeight.removeListener(_checkForChanges);
+
+    // Dispose controllers
+    durationTimer.dispose();
+    intentation.dispose();
+    screenWidth.dispose();
+    screenHeight.dispose();
+    easyWorshipPath.dispose();
+
+    super.dispose();
+  }
+
+  // Check if any values have changed
+  void _checkForChanges() {
+    final hasChanges = durationTimer.text != _initialDuration ||
+        intentation.text != _initialIntentation ||
+        screenWidth.text != _initialScreenWidth ||
+        screenHeight.text != _initialScreenHeight ||
+        _openEasyWorship != _initialOpenEasyWorship;
+
+    if (hasChanges != _hasChanges) {
+      setState(() {
+        _hasChanges = hasChanges;
+      });
+    }
+  }
+
+  // Save and reset initial values
+  void _saveSettings() {
+    pref.setValue(
+        'duration', durationTimer.text.isEmpty ? '50' : durationTimer.text);
+
+    pref.setValue('indent', intentation.text.isEmpty ? '2' : intentation.text);
+
+    pref.setValue(
+        'screenWidth', screenWidth.text.isEmpty ? '1920' : screenWidth.text);
+    pref.setValue(
+        'screenHeight', screenHeight.text.isEmpty ? '1080' : screenHeight.text);
+
+    globalIndentationValue.value = int.parse(
+      (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
+          ? localStore.get('indent')!
+          : '1',
+    );
+
+    // Update initial values after saving
+    _initialDuration = durationTimer.text.isEmpty ? '250' : durationTimer.text;
+    _initialIntentation = intentation.text.isEmpty ? '2' : intentation.text;
+    _initialScreenWidth = screenWidth.text.isEmpty ? '1920' : screenWidth.text;
+    _initialScreenHeight =
+        screenHeight.text.isEmpty ? '1080' : screenHeight.text;
+    _initialOpenEasyWorship = _openEasyWorship;
+
+    setState(() {
+      _hasChanges = false;
+    });
+
+    CustomNotification.show(
+      context,
+      "Saved!",
+    );
   }
 
   @override
@@ -94,35 +191,6 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 child: ListTile(
                   title: Text(
-                    'Go live after formatting',
-                    style: TextStyle(fontSize: 24, color: Colors.white),
-                  ),
-                  subtitle: Text(
-                    'Send the formatted lyrics to the screen automatically',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 100,
-                height: 100,
-                child: Checkbox(
-                  value: localStore.getBool('sendLyrics'),
-                  onChanged: (value) {
-                    setState(() {
-                      localStore.setBool('sendLyrics', value ?? false);
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: Text(
                     'Open EasyWorship',
                     style: TextStyle(fontSize: 24, color: Colors.white),
                   ),
@@ -132,76 +200,22 @@ class _SettingsPageState extends State<SettingsPage> {
                 width: 100,
                 height: 100,
                 child: Checkbox(
-                  value: localStore.getBool('openEasyWorship'),
+                  value: _openEasyWorship,
                   onChanged: (value) {
                     setState(() {
-                      localStore.setBool('openEasyWorship', value ?? true);
+                      _openEasyWorship = value ?? true;
+                      localStore.setBool('openEasyWorship', _openEasyWorship);
+                      _checkForChanges();
                     });
                   },
                 ),
               ),
             ],
           ),
-          // SizedBox(
-          //   height: 50,
-          // ),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Expanded(
-          //       child: ListTile(
-          //         title: Text(
-          //           'Screen Height',
-          //           style: TextStyle(fontSize: 24, color: Colors.white),
-          //         ),
-          //       ),
-          //     ),
-          //     TimerTextField(
-          //       minutesCtrl: screenHeight,
-          //       hint: '1080',
-          //     ),
-          //   ],
-          // ),
           ButtonWidget(
             title: 'Save Updates',
-            onTap: () async {
-              pref.setValue('duration',
-                  durationTimer.text.isEmpty ? '50' : durationTimer.text);
-
-              pref.setValue(
-                  'indent', intentation.text.isEmpty ? '2' : intentation.text);
-
-              pref.setValue('screenWidth',
-                  screenWidth.text.isEmpty ? '1920' : screenWidth.text);
-              pref.setValue('screenHeight',
-                  screenHeight.text.isEmpty ? '1080' : screenHeight.text);
-
-              globalIndentationValue.value = int.parse(
-                (localStore.get('indent') != null &&
-                        localStore.get('indent')!.isNotEmpty)
-                    ? localStore.get('indent')!
-                    : '1',
-              );
-
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text('Saved!')));
-            },
+            onTap: _hasChanges ? _saveSettings : null,
           ),
-          SizedBox(
-            height: 60,
-          ),
-          Text(
-            'Help',
-            style: TextStyle(fontSize: 24, color: Colors.white),
-          ),
-          Text(
-            'Ensure the song tab is just after the "Help" tab on your easyworship window as shown below',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Image.asset('assets/example.png'),
         ],
       ),
     );

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lukehog/lukehog.dart';
 import 'package:untitled/pages/lyrics/lyrics_notifier.dart';
 import 'package:untitled/pages/lyrics/lyrics_textfield.dart';
-import 'package:untitled/utils/local_storage.dart';
-import 'package:untitled/utils/utils.dart';
+import 'package:untitled/core/local_storage.dart';
+import 'package:untitled/core/utils.dart';
 
-import '../../utils/button_widget.dart';
+import '../../shared/button_widget.dart';
 import '../timer/timer_page.dart';
 
 class LyricsTab extends StatefulWidget {
@@ -12,6 +13,8 @@ class LyricsTab extends StatefulWidget {
     super.key,
     // required this.indetationVal,
   });
+
+  static final pageId = 'lyrics_tab';
 
   // final String indetationVal;
 
@@ -25,19 +28,25 @@ class _LyricsTabState extends State<LyricsTab> {
   @override
   void didUpdateWidget(covariant LyricsTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+    if (mounted) lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+
+    if (mounted) lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
   }
 
   @override
   void initState() {
     super.initState();
-    lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+    // Schedules a callback for the end of this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        lyricsNotifier.indentCtrl.text = pref.get('indent') ?? '';
+      }
+    });
   }
 
   final EasyUtils utils = EasyUtils();
@@ -57,15 +66,6 @@ class _LyricsTabState extends State<LyricsTab> {
                 builder: (context, text, _) {
                   return LyricsDisplay(lyrics: text);
                 }),
-            // const Text(
-            //   'Convert lyric text to EasyWorship slides with ease',
-            //   textAlign: TextAlign.center,
-            //   style: TextStyle(
-            //     fontSize: 48,
-            //     color: Colors.white,
-            //     fontWeight: FontWeight.w700,
-            //   ),
-            // ),
             const SizedBox(
               height: 20,
             ),
@@ -99,9 +99,12 @@ class _LyricsTabState extends State<LyricsTab> {
             ButtonWidget(
               title: 'Format Text',
               onTap: () async {
+                final openEasyWorship =
+                    localStore.getBool('openEasyWorship', defaultValue: true);
+
                 lyricsNotifier.formattedText.value = await utils.copyClipboard(
                       context,
-                      createSong: localStore.getBool('openEasyWorship'),
+                      createSong: openEasyWorship,
                       indentation: int.parse(
                         lyricsNotifier.indentCtrl.text.isNotEmpty
                             ? lyricsNotifier.indentCtrl.text

@@ -4,10 +4,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:untitled/utils/button_widget.dart';
+import 'package:untitled/core/analytics.dart';
+import 'package:untitled/pages/home_page.dart';
+import 'package:untitled/shared/button_widget.dart';
 
 class QrGenerator extends StatefulWidget {
   const QrGenerator({super.key});
+
+  static final pageId = 'qr_generator_page';
 
   @override
   State<QrGenerator> createState() => _QrGeneratorState();
@@ -37,6 +41,13 @@ class _QrGeneratorState extends State<QrGenerator> {
         final file = File('$outputFile.png');
         file.writeAsBytesSync(capturedImage);
 
+        Analytics.instance.trackEventWithProperties(
+          "qr_code_exported",
+          {
+            'file_path': outputFile.toString(),
+          },
+        );
+
         // final newImage = await file.copy('$outputFile.png');
       }
       // Handle captured image
@@ -48,19 +59,20 @@ class _QrGeneratorState extends State<QrGenerator> {
     return Container(
       child: Column(
         children: [
-          TextField(
-            autofocus: true,
-            decoration: InputDecoration(
-              fillColor: Colors.white,
-              filled: true,
-              hintText: 'Enter link',
-              contentPadding: EdgeInsets.all(10.0),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextField(
+              autofocus: true,
+              textAlignVertical: TextAlignVertical.center,
+              textAlign: TextAlign.center,
+              controller: _textCtrl,
+              decoration: InputDecoration(
+                hintText: 'Enter text here to generate QR code',
+              ),
+              onChanged: (val) async {
+                setState(() {});
+              },
             ),
-            textAlignVertical: TextAlignVertical.center,
-            controller: _textCtrl,
-            onChanged: (val) async {
-              setState(() {});
-            },
           ),
           SizedBox(
             height: 20,

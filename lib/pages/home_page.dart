@@ -1,203 +1,202 @@
-// import 'package:flutter/material.dart';
-// import 'package:untitled/pages/image_compress/image_compress.dart';
-// import 'package:untitled/pages/qr_code/qr_generator.dart';
-// import 'package:untitled/pages/schedule_editor/easyworship_viewer.dart';
-// import 'package:untitled/pages/settings/settings.dart';
-// import 'package:untitled/pages/timer/timer_page.dart';
-// import 'package:untitled/utils/local_storage.dart';
-// import 'package:untitled/utils/utils.dart';
-// import 'package:url_launcher/url_launcher_string.dart';
-// import 'package:window_size/window_size.dart';
+import 'package:flutter/material.dart';
+import 'package:untitled/core/analytics.dart';
+import 'package:untitled/pages/image_compress/image_compress.dart';
+import 'package:untitled/pages/qr_code/qr_generator.dart';
+import 'package:untitled/pages/settings/settings.dart';
+import 'package:untitled/pages/timer/timer_page.dart';
+import 'package:untitled/core/local_storage.dart';
+import 'package:untitled/core/utils.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
-// import '../utils/custom_nav_tile.dart';
-// import 'lyrics/lyrics_tab.dart';
+import '../shared/custom_nav_tile.dart';
+import 'lyrics/lyrics_tab.dart';
 
+ValueNotifier<int> globalIndentationValue = ValueNotifier(1);
 
-// class HomePage extends StatefulWidget {
-//   HomePage({
-//     super.key,
-//   });
+const scaffoldColor = Color(0xff141414);
+const accentColor = Color(0xff262626);
 
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
+// Navigation Item Model
+class NavItem {
+  final String title;
+  final IconData icon;
+  final String pageId;
+  final Widget page;
 
-// class _HomePageState extends State<HomePage> {
-//   final EasyUtils utils = EasyUtils();
+  const NavItem({
+    required this.title,
+    required this.icon,
+    required this.page,
+    this.pageId = 'unknown_page',
+  });
+}
 
-//   int _value = 0;
+class HomePageAlt extends StatefulWidget {
+  const HomePageAlt({super.key});
 
-//   @override
-//   void didChangeDependencies() {
-//     // TODO: implement didChangeDependencies
-//     super.didChangeDependencies();
-//     getList();
-//   }
+  static final pageId = 'home_page';
 
-//   @override
-//   void didUpdateWidget(covariant HomePage oldWidget) {
-//     // TODO: implement didUpdateWidget
-//     super.didUpdateWidget(oldWidget);
-//     getList();
-//   }
+  @override
+  State<HomePageAlt> createState() => _HomePageAltState();
+}
 
-//   @override
-//   void initState() {
-//     // TODO: implement initState
-//     super.initState();
-//     getList();
-//   }
+class _HomePageAltState extends State<HomePageAlt> {
+  final EasyUtils utils = EasyUtils();
+  int _value = 0;
 
-//   getList() async {
-//     globalIndentationValue.value = int.parse(
-//       (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
-//           ? localStore.get('indent')!
-//           : '1',
-//     );
-//     final list = await getScreenList();
+  // Define all navigation items
+  late final List<NavItem> navigationItems = [
+    NavItem(
+      title: 'Lyrics',
+      pageId: LyricsTab.pageId,
+      icon: Icons.music_note,
+      page: ValueListenableBuilder(
+        valueListenable: globalIndentationValue,
+        builder: (context, value, child) {
+          return LyricsTab(key: ValueKey(value));
+        },
+      ),
+    ),
+    // NavItem(
+    //   title: 'Browser',
+    //   icon: Icons.web,
+    //   page: ExampleBrowser(),
+    // ),
+    // NavItem(
+    //   title: 'Timer',
+    //   icon: Icons.timer,
+    //   page: const TimerTab(),
+    // ),
+    NavItem(
+      title: 'YT Image Compress',
+      pageId: ImageCompress.pageId,
+      icon: Icons.image,
+      page: const ImageCompress(),
+    ),
+    NavItem(
+      title: 'QR Generator',
+      pageId: QrGenerator.pageId,
+      icon: Icons.image,
+      page: const QrGenerator(),
+    ),
+    // NavItem(
+    //   title: 'EasyWorship Viewer',
+    //   icon: Icons.schedule,
+    //   page: const EasyWorshipViewer(),
+    // ),
+    // NavItem(
+    //   title: 'Video Modifier',
+    //   icon: Icons.schedule,
+    //   page: const VideoEditorPage(),
+    // ),
+    NavItem(
+      title: 'Settings',
+      pageId: SettingsPage.pageId,
+      icon: Icons.settings,
+      page: SettingsPage(),
+    ),
+  ];
 
-//     screenDimensions.value = list;
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
 
-//     list?.forEach((element) {
-//       print(element.frame);
-//     });
+  init() {
+    globalIndentationValue.value = int.parse(
+      (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
+          ? localStore.get('indent')!
+          : '1',
+    );
+    loadScreenDimensions();
 
-//     final screen = await getCurrentScreen();
+    Analytics.instance.trackScreen(
+      HomePageAlt.pageId,
+    );
+  }
 
-//     // print(screen?.visibleFrame);
-//   }
+  @override
+  Widget build(BuildContext context) {
+    globalIndentationValue.value = int.parse(
+      (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
+          ? localStore.get('indent')!
+          : '1',
+    );
 
-//   final pages = [
-//     ValueListenableBuilder(
-//         valueListenable: globalIndentationValue,
-//         builder: (context, value, child) {
-//           return LyricsTab(
-//             key: ValueKey(value),
-//             // indetationVal: value.toString(),
-//           );
-//         }),
-//     // ExampleBrowser(),
-//     TimerTab(),
-//     ImageCompress(),
-//     QrGenerator(),
-//     EasyWorshipViewer(),
-//     SettingsPage(),
-//   ];
+    return Scaffold(
+      backgroundColor: scaffoldColor,
+      body: Row(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: accentColor,
+            ),
+            width: 300,
+            height: MediaQuery.sizeOf(context).height,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 50),
+                  Image.asset(
+                    'assets/logo.png',
+                    width: 100,
+                    height: 100,
+                  ),
+                  const SizedBox(height: 100),
+                  Column(
+                    children: [
+                      // Navigation Items
+                      ...navigationItems.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final item = entry.value;
+                        return MyRadioListTile(
+                          value: index,
+                          groupValue: _value,
+                          onChanged: (value) {
+                            Analytics.instance.trackScreen(
+                              item.pageId,
+                            );
+                            setState(() => _value = value!);
+                          },
+                          title: item.title,
+                          icon: item.icon,
+                        );
+                      }),
 
-//   @override
-//   Widget build(BuildContext context) {
-//     globalIndentationValue.value = int.parse(
-//       (localStore.get('indent') != null && localStore.get('indent')!.isNotEmpty)
-//           ? localStore.get('indent')!
-//           : '1',
-//     );
-//     return Scaffold(
-//         backgroundColor: Color(0xff141414),
-//         body: Row(
-//           children: [
-//             Container(
-//               decoration: BoxDecoration(color: Color(0xff262626)),
-//               width: 300,
-//               child: SingleChildScrollView(
-//                 child: Column(
-//                   children: [
-//                     SizedBox(
-//                       height: 50,
-//                     ),
-//                     Image.asset(
-//                       'assets/logo.png',
-//                       width: 100,
-//                       height: 100,
-//                     ),
-//                     SizedBox(
-//                       height: 100,
-//                     ),
-//                     Column(
-//                       children: [
-//                         MyRadioListTile(
-//                           value: 0,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "Lyrics",
-//                           icon: Icons.music_note,
-//                         ),
-//                         MyRadioListTile(
-//                           value: 1,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "Browser",
-//                           icon: Icons.web,
-//                         ),
-//                         MyRadioListTile(
-//                           value: 2,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "Timer",
-//                           icon: Icons.timer,
-//                         ),
-//                         MyRadioListTile(
-//                           value: 3,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "Image Compress",
-//                           icon: Icons.image,
-//                         ),
-//                         MyRadioListTile(
-//                           value: 4,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "QR Generator",
-//                           icon: Icons.image,
-//                         ),
-//                         MyRadioListTile(
-//                           value: 5,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "EasyWorship Viewer",
-//                           icon: Icons.schedule,
-//                         ),
-//                         SizedBox(
-//                           height: 45,
-//                         ),
-//                         MyRadioListTile(
-//                           value: 6,
-//                           groupValue: _value,
-//                           onChanged: (value) => setState(() => _value = value!),
-//                           title: "Settings",
-//                           icon: Icons.settings,
-//                         ),
-//                         SizedBox(
-//                           height: 45,
-//                         ),
-//                         InkWell(
-//                           onTap: () {
-//                             launchUrlString(
-//                                 'https://www.linkedin.com/in/davies-manuel/');
-//                           },
-//                           child: Row(
-//                             children: [
-//                               SizedBox(width: 24),
-//                               Text(
-//                                 '@Tamunorth',
-//                                 style: TextStyle(color: Colors.white),
-//                               ),
-//                             ],
-//                           ),
-//                         )
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//             Expanded(
-//                 child: IndexedStack(
-//               index: _value,
-//               children: pages,
-//             ))
-//           ],
-//         ));
-//   }
-// }
+                      const SizedBox(height: 45),
+                      // Footer section
+                      InkWell(
+                        onTap: () {
+                          launchUrlString(
+                              'https://www.linkedin.com/in/davies-manuel/');
+                        },
+                        child: const Row(
+                          children: [
+                            SizedBox(width: 24),
+                            Text(
+                              '@Tamunorth',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: IndexedStack(
+              index: _value,
+              children: navigationItems.map((item) => item.page).toList(),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
 
-// enum AppTab { timer, lyrics, settings, browser }
+enum AppTab { timer, lyrics, settings, browser }
