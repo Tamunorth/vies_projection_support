@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_drop
   desktop_multi_window
+  open_dir_linux
   screen_retriever_linux
   url_launcher_linux
   window_manager

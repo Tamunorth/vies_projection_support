@@ -75,7 +75,7 @@ void main(List<String> args) async {
   // }
 
   await Analytics.instance.initialize(
-    "cKIU1muejvW3PqS3",
+    "ubruc6OOoJ1hTsfu",
     debug: kDebugMode,
     sessionExpiration: Duration(minutes: 30),
   );
