@@ -7,19 +7,49 @@ import 'package:path_provider/path_provider.dart';
 import 'package:untitled/core/analytics.dart';
 import 'dart:developer';
 
-Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
-  final String filePath = imageFile.path;
+import 'package:untitled/core/enums/aspect_ratio_mode.dart';
 
-  // Pass the file path to the isolate, not the bytes
-  final Map<String, dynamic> params = {
-    'filePath': filePath,
+/// Compresses an image file to be under the specified maximum size in bytes.
+///
+Future<File?> compressImageToSize(
+  File imageFile,
+  int maxSizeInBytes, {
+  AspectRatioMode? aspectRatioMode,
+}) async {
+  final stopwatch = Stopwatch()..start();
+  File fileToProcess = imageFile;
+
+  // --- Step 1 (Isolate): Enforce Aspect Ratio ---
+  if (aspectRatioMode != null) {
+    log('Starting aspect ratio enforcement: ${aspectRatioMode.name}');
+    final Map<String, dynamic> aspectRatioParams = {
+      'filePath': imageFile.path,
+      'mode': aspectRatioMode.index,
+    };
+
+    // Isolate now returns raw image data (bytes), not a file path
+    final Map<String, dynamic>? result =
+        await compute(_enforceAspectRatio, aspectRatioParams);
+
+    // If the image was changed, save the new bytes to a temporary file
+    if (result != null && result['bytes'] != null) {
+      final Directory tempDir = await getTemporaryDirectory();
+      final String extension = result['extension'];
+      final String newPath =
+          '${tempDir.path}/${Random().nextInt(10000)}_aspect.$extension';
+      fileToProcess = await File(newPath).writeAsBytes(result['bytes']);
+      log('Saved aspect-ratio-enforced image to temp file: ${newPath}');
+    }
+  }
+
+  // --- Step 2 (Isolate): Compress Image ---
+  log('Starting compression for ${fileToProcess.path}');
+  final Map<String, dynamic> compressionParams = {
+    'filePath': fileToProcess.path,
     'maxSizeInBytes': maxSizeInBytes,
   };
-
-  final stopwatch = Stopwatch()..start();
-
-  // The isolate will now handle all heavy work, including file reading
-  final Map<String, dynamic>? result = await compute(_compressImage, params);
+  final Map<String, dynamic>? result =
+      await compute(_compressImage, compressionParams);
 
   if (result == null || result['bytes'] == null) {
     throw 'Failed to resize';
@@ -28,7 +58,6 @@ Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
   final Directory tempDir = await getTemporaryDirectory();
   final String tempPath = tempDir.path;
   final String extension = result['extension'];
-
   final File compressedFile =
       File('$tempPath${Random().nextInt(1000)}.$extension');
   await compressedFile.writeAsBytes(result['bytes']);
@@ -44,17 +73,11 @@ Future<File?> compressImageToSize(File imageFile, int maxSizeInBytes) async {
     'compressed_path': compressedFile.path,
   };
 
-  log('time taken details: ${stopwatch.elapsedMilliseconds} ms');
-
-  // Fire the analytics event with all details
-  Analytics.instance.trackEventWithProperties(
-    "image_compression_details",
-    {
-      ...analyticsData,
-      'time_taken': '${stopwatch.elapsedMilliseconds} ms',
-    },
-  );
-
+  log('Total time taken: ${stopwatch.elapsedMilliseconds} ms');
+  Analytics.instance.trackEventWithProperties("image_compression_details", {
+    ...analyticsData,
+    'time_taken': '${stopwatch.elapsedMilliseconds} ms',
+  });
   stopwatch.stop();
 
   return compressedFile;
@@ -163,4 +186,67 @@ Future<Map<String, dynamic>?> _compressImage(
     'bytes': resultBytes, // This will be the smallest version
     'extension': 'jpg',
   };
+}
+
+/// Processes an image to enforce a 16:9 aspect ratio.
+///
+/// Returns the path to a new, temporary file if modification was needed,
+/// otherwise returns the original file path.
+/// Processes an image to enforce a 16:9 aspect ratio in an isolate.
+///
+/// Returns a map with the modified image's bytes and extension, or null
+/// if no modification was needed.
+Future<Map<String, dynamic>?> _enforceAspectRatio(
+  Map<String, dynamic> params,
+) async {
+  final String filePath = params['filePath'];
+  final AspectRatioMode mode = AspectRatioMode.values[params['mode']];
+
+  final imageBytes = await File(filePath).readAsBytes();
+  final img.Image? image = img.decodeImage(imageBytes);
+
+  if (image == null) return null;
+
+  const double targetAspectRatio = 16.0 / 9.0;
+  final double currentAspectRatio = image.width / image.height;
+
+  if ((currentAspectRatio - targetAspectRatio).abs() < 0.01) {
+    log('Image is already 16:9. No changes needed.');
+    return null; // Return null to indicate no changes were made
+  }
+
+  log('Image is not 16:9. Applying mode: ${mode.name}');
+  img.Image modifiedImage;
+
+  if (mode == AspectRatioMode.centerCrop) {
+    int cropWidth, cropHeight, x, y;
+    if (currentAspectRatio > targetAspectRatio) {
+      cropHeight = image.height;
+      cropWidth = (cropHeight * targetAspectRatio).toInt();
+      x = (image.width - cropWidth) ~/ 2;
+      y = 0;
+    } else {
+      cropWidth = image.width;
+      cropHeight = (cropWidth / targetAspectRatio).toInt();
+      x = 0;
+      y = (image.height - cropHeight) ~/ 2;
+    }
+    modifiedImage =
+        img.copyCrop(image, x: x, y: y, width: cropWidth, height: cropHeight);
+  } else {
+    // AspectRatioMode.stretch
+    modifiedImage = img.copyResize(
+      image,
+      width: image.width,
+      height: (image.width / targetAspectRatio).toInt(),
+      maintainAspect: false,
+    );
+  }
+
+  final String extension = filePath.split('.').last.toLowerCase();
+  final Uint8List outputBytes = extension == 'png'
+      ? img.encodePng(modifiedImage)
+      : img.encodeJpg(modifiedImage);
+
+  return {'bytes': outputBytes, 'extension': extension};
 }

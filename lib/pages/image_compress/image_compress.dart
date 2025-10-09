@@ -1,13 +1,13 @@
+import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img_lib;
 import 'package:open_dir/open_dir.dart';
 import 'package:untitled/core/analytics.dart';
 import 'package:untitled/core/compress_image.dart';
+import 'package:untitled/core/enums/aspect_ratio_mode.dart';
 import 'package:untitled/pages/home_page.dart';
 import 'package:untitled/shared/button_widget.dart';
 import 'package:untitled/shared/snackbar.dart';
@@ -26,6 +26,7 @@ class _ImageCompressState extends State<ImageCompress> {
   File? img;
   String? savedImagePath;
   bool isLoading = false;
+  AspectRatioMode _selectedMode = AspectRatioMode.stretch;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,7 @@ class _ImageCompressState extends State<ImageCompress> {
             ),
             Row(
               children: [
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
               ],
             ),
             Text(
@@ -58,6 +59,59 @@ class _ImageCompressState extends State<ImageCompress> {
                   .textTheme
                   .bodyMedium
                   ?.copyWith(color: Colors.white),
+            ),
+            const SizedBox(height: 24),
+            DropdownMenu<AspectRatioMode>(
+              width: 240,
+              initialSelection: _selectedMode,
+              onSelected: (AspectRatioMode? mode) {
+                if (mode != null) {
+                  setState(() {
+                    _selectedMode = mode;
+                  });
+                }
+              },
+              dropdownMenuEntries: AspectRatioMode.values
+                  .map<DropdownMenuEntry<AspectRatioMode>>(
+                (AspectRatioMode mode) {
+                  return DropdownMenuEntry<AspectRatioMode>(
+                    value: mode,
+                    label: mode.displayName,
+                    style: ButtonStyle(
+                      foregroundColor:
+                          WidgetStateProperty.all<Color>(Colors.white),
+                    ),
+                  );
+                },
+              ).toList(),
+              textStyle: const TextStyle(
+                fontSize: 14,
+              ),
+              menuStyle: MenuStyle(
+                backgroundColor: WidgetStateProperty.all<Color?>(accentColor),
+                fixedSize: WidgetStateProperty.all<Size>(
+                  Size.fromWidth(240),
+                ),
+                padding: WidgetStateProperty.all<EdgeInsets>(
+                  EdgeInsets.symmetric(vertical: 8.0),
+                ),
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: accentColor,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
+                // Defines the border style when the dropdown is not focused.
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4.0),
+                  borderSide:
+                      BorderSide(color: Colors.grey.shade600, width: 1.0),
+                ),
+                // Defines the border style when the dropdown is focused.
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4.0),
+                  borderSide: const BorderSide(color: accentColor, width: 2.0),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
             if (img != null)
@@ -96,20 +150,14 @@ class _ImageCompressState extends State<ImageCompress> {
             else
               const SizedBox(
                 width: 240,
-                height: 200,
+                height: 144,
                 child: Image(
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     image: AssetImage('assets/image_placeholder.png')),
               ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
             if (isLoading) ...[
-              CircularProgressIndicator(
-                strokeCap: StrokeCap.round,
-                strokeWidth: 5,
-                backgroundColor: accentColor,
-                trackGap: 12,
-                color: Colors.blue,
-              ),
+              const CircularProgressIndicator(),
               const SizedBox(height: 12),
             ],
             ButtonWidget(
@@ -122,22 +170,12 @@ class _ImageCompressState extends State<ImageCompress> {
     );
   }
 
-  /// Formats file size in bytes to a human-readable string (KB, MB, etc.).
-  String _formatBytes(int bytes, {int decimals = 2}) {
-    if (bytes <= 0) return "0 B";
-    const suffixes = ["B", "KB", "MB", "GB", "TB"];
-    var i = (log(bytes) / log(1024)).floor();
-    return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
-  }
-
   /// Handles the image selection, compression, and saving process.
   _compressImage({File? passedFile}) async {
     setState(() {
       isLoading = true;
       savedImagePath = null;
     });
-
-    final stopwatch = Stopwatch()..start();
 
     try {
       File? fileImage;
@@ -154,8 +192,12 @@ class _ImageCompressState extends State<ImageCompress> {
       }
 
       if (fileImage == null) return;
-      final compressedFile =
-          await compressImageToSize(fileImage, maxSizeInBytes);
+      final compressedFile = await compressImageToSize(
+        fileImage,
+        maxSizeInBytes,
+        aspectRatioMode:
+            _selectedMode == AspectRatioMode.maintain ? null : _selectedMode,
+      );
       if (compressedFile == null) {
         throw Exception("Compression returned a null file.");
       }
@@ -178,7 +220,7 @@ class _ImageCompressState extends State<ImageCompress> {
       );
 
       if (savePath != null) {
-        if (p.extension(savePath) != '.$extension') {
+        if (p.extension(savePath).isEmpty) {
           savePath = '$savePath.$extension';
         }
         await compressedFile.copy(savePath);
@@ -204,6 +246,7 @@ class _ImageCompressState extends State<ImageCompress> {
         },
       );
       if (mounted) {
+        log('Error during image compression: $e\n$trace');
         CustomNotification.show(
           context,
           "Could not compress image: ${e.toString()}",
