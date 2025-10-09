@@ -8,27 +8,66 @@ permissions:
 jobs:
   windows-installer:
     runs-on: windows-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+  steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
 
-      - name: Get Flutter
-        uses: subosito/flutter-action@v2
+    - name: Get Flutter
+      uses: subosito/flutter-action@v2
 
-      - name: Build Windows App and Installer
-        run: dart run inno_bundle:build --release 
+    - name: Bump build number
+      shell: pwsh
+      run: |
+        $pubspecPath = "pubspec.yaml"
+        $pubspecContent = Get-Content $pubspecPath
+        $newPubspecContent = $pubspecContent -replace '(version:\s*\d+\.\d+\.\d+\+)\d+', '${1}${{ github.run_number }}'
+        Set-Content -Path $pubspecPath -Value $newPubspecContent
+        echo "Version bumped to +${{ github.run_number }}"
 
-      - name: Output config into github output
-        id: envs
-        # thanks to https://github.com/actions/runner/issues/2224#issuecomment-1289925992
-        run: echo $(dart run inno_bundle:build --envs --no-hf) | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+    - name: Commit and push version bump
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore: Bump build number to +${{ github.run_number }} [skip ci]"
+        file_pattern: pubspec.yaml
 
-      - name: Release installer
-        uses: softprops/action-gh-release@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: |
-            ./build/windows/x64/installer/Release/${{ steps.envs.outputs.APP_NAME_CAMEL_CASE }}-x86_64-${{ steps.envs.outputs.APP_VERSION }}-Installer.exe
-          name: "${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
-          target_commitish: "${{ github.sha }}"
-          tag_name: "v${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
+    - name: Build Windows App and Installer
+      run: dart run inno_bundle:build --release
+
+    - name: Output config into github output
+      id: envs
+      run: echo $(dart run inno_bundle:build --envs --no-hf) | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Release installer
+      id: create_release # <-- Add an ID here
+      uses: softprops/action-gh-release@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: |
+          ./build/windows/x64/installer/Release/${{ steps.envs.outputs.APP_NAME_CAMEL_CASE }}-x86_64-${{ steps.envs.outputs.APP_VERSION }}-Installer.exe
+        name: "${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
+        target_commitish: "${{ github.sha }}"
+        tag_name: "v${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
+
+    # --- NEW STEPS START HERE ---
+
+    - name: Generate release JSON
+      shell: pwsh
+      run: |
+        $assetName = "${{ steps.envs.outputs.APP_NAME_CAMEL_CASE }}-x86_64-${{ steps.envs.outputs.APP_VERSION }}-Installer.exe"
+        $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.create_release.outputs.tag_name }}/$assetName"
+        $json = @{
+          version = "${{ steps.envs.outputs.APP_VERSION }}"
+          url = $downloadUrl
+        } | ConvertTo-Json
+        
+        New-Item -ItemType Directory -Force -Path "./public"
+        Set-Content -Path "./public/latest.json" -Value $json
+        echo "Generated JSON file: $json"
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+
+  # --- NEW STEPS END HERE ---

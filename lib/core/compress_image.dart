@@ -4,10 +4,10 @@ import 'dart:math' show Random;
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
-import 'package:untitled/core/analytics.dart';
+import 'package:vies_projection_support/core/analytics.dart';
 import 'dart:developer';
 
-import 'package:untitled/core/enums/aspect_ratio_mode.dart';
+import 'package:vies_projection_support/core/enums/aspect_ratio_mode.dart';
 
 /// Compresses an image file to be under the specified maximum size in bytes.
 ///

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/home_page.dart';
-import 'package:untitled/pages/timer/timer_page.dart';
-import 'package:untitled/shared/snackbar.dart';
+import 'package:vies_projection_support/pages/home_page.dart';
+import 'package:vies_projection_support/pages/timer/timer_page.dart';
+import 'package:vies_projection_support/shared/snackbar.dart';
 
 import '../../shared/button_widget.dart';
 import '../../core/local_storage.dart';
