@@ -139,6 +139,6 @@ inno_bundle:
   name: Vies Projection Support
   installer_icon: assets/logo.ico
   uninstaller_icon: assets/logo.ico
-  sign_tool: InnoBundleTool
+  sign_tool: 
   url: https://quick-meet-476fa.web.app/
   updates_url: https://quick-meet-476fa.web.app/
