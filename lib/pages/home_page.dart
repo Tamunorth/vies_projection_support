@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vies_projection_support/core/analytics.dart';
+import 'package:vies_projection_support/core/update_service.dart';
 import 'package:vies_projection_support/pages/image_compress/image_compress.dart';
 import 'package:vies_projection_support/pages/qr_code/qr_generator.dart';
 import 'package:vies_projection_support/pages/settings/settings.dart';
@@ -7,6 +8,7 @@ import 'package:vies_projection_support/pages/timer/timer_page.dart';
 import 'package:vies_projection_support/core/local_storage.dart';
 import 'package:vies_projection_support/core/utils.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:http/http.dart' as http;
 
 import '../shared/custom_nav_tile.dart';
 import 'lyrics/lyrics_tab.dart';
@@ -110,6 +112,8 @@ class _HomePageAltState extends State<HomePageAlt> {
           : '1',
     );
     loadScreenDimensions();
+
+    UpdateService.checkForUpdates(context);
 
     Analytics.instance.trackScreen(
       HomePageAlt.pageId,

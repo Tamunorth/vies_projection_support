@@ -10,7 +10,6 @@ import 'package:vies_projection_support/pages/home_page.dart';
 import 'package:vies_projection_support/pages/timer/timer_page.dart';
 import 'package:vies_projection_support/core/local_storage.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:auto_updater/auto_updater.dart';
 
 bool hasInitWindowManger = false;
 
@@ -69,12 +68,6 @@ class MyApp extends StatelessWidget {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  String feedURL =
-      'https://quick-meet-476fa.web.app/vies_projection_support.json';
-  await autoUpdater.setFeedURL(feedURL);
-  await autoUpdater.checkForUpdates();
-  await autoUpdater.setScheduledCheckInterval(3600);
 
   await localStore.init();
   // if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
