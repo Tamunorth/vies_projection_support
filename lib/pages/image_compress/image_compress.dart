@@ -12,6 +12,7 @@ import 'package:vies_projection_support/pages/home_page.dart';
 import 'package:vies_projection_support/shared/button_widget.dart';
 import 'package:vies_projection_support/shared/snackbar.dart';
 import 'package:path/path.dart' as p;
+import 'package:vies_projection_support/pages/home_page.dart';
 
 class ImageCompress extends StatefulWidget {
   const ImageCompress({super.key});
@@ -157,7 +158,13 @@ class _ImageCompressState extends State<ImageCompress> {
               ),
             const SizedBox(height: 24),
             if (isLoading) ...[
-              const CircularProgressIndicator(),
+              const CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+                strokeWidth: 5,
+                backgroundColor: accentColor,
+                trackGap: 12,
+                color: Colors.blue,
+              ),
               const SizedBox(height: 12),
             ],
             ButtonWidget(
