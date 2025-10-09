@@ -12,8 +12,6 @@ jobs:
     - name: Checkout Repo
       uses: actions/checkout@v3
 
-    - name: Get Flutter
-      uses: subosito/flutter-action@v2
 
     - name: Bump build number
       shell: pwsh
@@ -29,6 +27,11 @@ jobs:
       with:
         commit_message: "chore: Bump build number to +${{ github.run_number }} [skip ci]"
         file_pattern: pubspec.yaml
+
+    # --- MOVED STEPS END HERE ---
+
+    - name: Get Flutter
+      uses: subosito/flutter-action@v2
 
     - name: Build Windows App and Installer
       run: dart run inno_bundle:build --release
@@ -67,3 +70,4 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
+
