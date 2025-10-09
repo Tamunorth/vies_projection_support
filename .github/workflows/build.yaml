@@ -12,23 +12,32 @@ jobs:
     - name: Checkout Repo
       uses: actions/checkout@v3
 
-
     - name: Bump build number
       shell: pwsh
       run: |
         $pubspecPath = "pubspec.yaml"
-        $pubspecContent = Get-Content $pubspecPath
-        $newPubspecContent = $pubspecContent -replace '(version:\s*\d+\.\d+\.\d+\+)\d+', '${1}${{ github.run_number }}'
-        Set-Content -Path $pubspecPath -Value $newPubspecContent
-        echo "Version bumped to +${{ github.run_number }}"
+        $content = Get-Content $pubspecPath
+        $versionLine = $content | Select-String -Pattern "(version:\s*\d+\.\d+\.\d+\+)(\d+)"
+        
+        if (-not $versionLine) {
+          Write-Error "ERROR: Could not find version string in pubspec.yaml. It must match 'version: x.y.z+n'."
+          exit 1
+        }
+        
+        $newVersionLine = $versionLine.Line -replace "(version:\s*\d+\.\d+\.\d+\+)(\d+)", ('${1}' + '${{ github.run_number }}')
+        
+        $newContent = $content | ForEach-Object {
+            if ($_ -match $versionLine.Pattern) { $newVersionLine } else { $_ }
+        }
+        
+        Set-Content -Path $pubspecPath -Value $newContent
+        echo "Successfully bumped version to: $newVersionLine"
 
     - name: Commit and push version bump
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore: Bump build number to +${{ github.run_number }} [skip ci]"
         file_pattern: pubspec.yaml
-
-    # --- MOVED STEPS END HERE ---
 
     - name: Get Flutter
       uses: subosito/flutter-action@v2
@@ -45,29 +54,55 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        body: ${{ github.event.head_commit.message }}
         files: |
           ./build/windows/x64/installer/Release/${{ steps.envs.outputs.APP_NAME_CAMEL_CASE }}-x86_64-${{ steps.envs.outputs.APP_VERSION }}-Installer.exe
         name: "${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
         target_commitish: "${{ github.sha }}"
         tag_name: "v${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
 
+    - name: Checkout gh-pages branch
+      uses: actions/checkout@v3
+      with:
+        ref: gh-pages
+        path: gh-pages
+
     - name: Generate release JSON
       shell: pwsh
       run: |
+        $historyFilePath = "./gh-pages/latest.json"
+        $outputDir = "./public"
+        $outputFilePath = "$outputDir/latest.json"
+
+        $releases = @()
+        if (Test-Path $historyFilePath) {
+          try {
+            $releases = Get-Content $historyFilePath -Raw | ConvertFrom-Json
+          } catch {
+            Write-Warning "Could not parse existing latest.json. Starting fresh."
+          }
+        }
+        
         $assetName = "${{ steps.envs.outputs.APP_NAME_CAMEL_CASE }}-x86_64-${{ steps.envs.outputs.APP_VERSION }}-Installer.exe"
-        $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.create_release.outputs.tag_name }}/$assetName"
-        $json = @{
+        $tagName = "v${{ steps.envs.outputs.APP_VERSION }}_${{ github.run_id }}"
+        $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tagName/$assetName"
+        
+        $newRelease = @{
           version = "${{ steps.envs.outputs.APP_VERSION }}"
           url = $downloadUrl
-        } | ConvertTo-Json
+          notes = "${{ steps.create_release.outputs.body }}"
+        }
+
+        $updatedReleases = @($newRelease) + $releases
+
+        $json = $updatedReleases | ConvertTo-Json -Depth 99
         
-        New-Item -ItemType Directory -Force -Path "./public"
-        Set-Content -Path "./public/latest.json" -Value $json
-        echo "Generated JSON file: $json"
+        New-Item -ItemType Directory -Force -Path $outputDir
+        Set-Content -Path $outputFilePath -Value $json
+        echo "Generated JSON file with updated history"
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
-
