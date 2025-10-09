@@ -1,6 +1,6 @@
-# untitled
+# Vies Projection Support
 
-A new Flutter project.
+A porjection support application to automate easyworship lyrics formats | generate qr codes | compress Youtube Thumbnail images to a max of 2MB
 
 ## Getting Started
 
