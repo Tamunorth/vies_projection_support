@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lukehog/lukehog.dart';
-import 'package:untitled/pages/lyrics/lyrics_notifier.dart';
-import 'package:untitled/pages/lyrics/lyrics_textfield.dart';
-import 'package:untitled/core/local_storage.dart';
-import 'package:untitled/core/utils.dart';
+import 'package:vies_projection_support/pages/lyrics/lyrics_notifier.dart';
+import 'package:vies_projection_support/pages/lyrics/lyrics_textfield.dart';
+import 'package:vies_projection_support/core/local_storage.dart';
+import 'package:vies_projection_support/core/utils.dart';
 
 import '../../shared/button_widget.dart';
 import '../timer/timer_page.dart';

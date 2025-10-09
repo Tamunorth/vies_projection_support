@@ -8,11 +8,11 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:process_run/process_run.dart';
-import 'package:untitled/core/block_input.dart';
-import 'package:untitled/core/local_storage.dart';
+import 'package:vies_projection_support/core/block_input.dart';
+import 'package:vies_projection_support/core/local_storage.dart';
 import 'package:screen_retriever/screen_retriever.dart';
-import 'package:untitled/shared/snackbar.dart';
-import 'package:untitled/core/win_automation.dart';
+import 'package:vies_projection_support/shared/snackbar.dart';
+import 'package:vies_projection_support/core/win_automation.dart';
 import '../pages/lyrics/lyrics_notifier.dart';
 
 ValueNotifier<List<Display>> screenDimensions = ValueNotifier([]);

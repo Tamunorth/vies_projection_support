@@ -1,8 +1,8 @@
 // // lib/pages/video_editor_page.dart
 //
 // import 'package:flutter/material.dart';
-// import 'package:untitled/pages/video_editor/ndi_output.dart';
-// import 'package:untitled/pages/video_editor/video_editor_controller.dart';
+// import 'package:vies_projection_support/pages/video_editor/ndi_output.dart';
+// import 'package:vies_projection_support/pages/video_editor/video_editor_controller.dart';
 //
 // class VideoEditorPage extends StatefulWidget {
 //   const VideoEditorPage({Key? key}) : super(key: key);

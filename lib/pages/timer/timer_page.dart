@@ -3,9 +3,9 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-import 'package:untitled/core/analytics.dart';
-import 'package:untitled/shared/button_widget.dart';
-import 'package:untitled/core/utils.dart';
+import 'package:vies_projection_support/core/analytics.dart';
+import 'package:vies_projection_support/shared/button_widget.dart';
+import 'package:vies_projection_support/core/utils.dart';
 // import 'package:flutter_multi_window_example/event_widget.dart';
 
 class TimerTab extends StatefulWidget {

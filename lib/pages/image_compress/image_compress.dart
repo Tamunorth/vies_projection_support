@@ -5,12 +5,12 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:open_dir/open_dir.dart';
-import 'package:untitled/core/analytics.dart';
-import 'package:untitled/core/compress_image.dart';
-import 'package:untitled/core/enums/aspect_ratio_mode.dart';
-import 'package:untitled/pages/home_page.dart';
-import 'package:untitled/shared/button_widget.dart';
-import 'package:untitled/shared/snackbar.dart';
+import 'package:vies_projection_support/core/analytics.dart';
+import 'package:vies_projection_support/core/compress_image.dart';
+import 'package:vies_projection_support/core/enums/aspect_ratio_mode.dart';
+import 'package:vies_projection_support/pages/home_page.dart';
+import 'package:vies_projection_support/shared/button_widget.dart';
+import 'package:vies_projection_support/shared/snackbar.dart';
 import 'package:path/path.dart' as p;
 
 class ImageCompress extends StatefulWidget {

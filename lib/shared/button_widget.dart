@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/core/analytics.dart';
+import 'package:vies_projection_support/core/analytics.dart';
 
 class ButtonWidget extends StatelessWidget {
   const ButtonWidget({

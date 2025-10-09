@@ -4,12 +4,13 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:untitled/core/analytics.dart';
+import 'package:vies_projection_support/core/analytics.dart';
 // import 'package:media_kit/media_kit.dart';
-import 'package:untitled/pages/home_page.dart';
-import 'package:untitled/pages/timer/timer_page.dart';
-import 'package:untitled/core/local_storage.dart';
+import 'package:vies_projection_support/pages/home_page.dart';
+import 'package:vies_projection_support/pages/timer/timer_page.dart';
+import 'package:vies_projection_support/core/local_storage.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:auto_updater/auto_updater.dart';
 
 bool hasInitWindowManger = false;
 
@@ -68,6 +69,12 @@ class MyApp extends StatelessWidget {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  String feedURL =
+      'https://quick-meet-476fa.web.app/vies_projection_support.json';
+  await autoUpdater.setFeedURL(feedURL);
+  await autoUpdater.checkForUpdates();
+  await autoUpdater.setScheduledCheckInterval(3600);
 
   await localStore.init();
   // if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
