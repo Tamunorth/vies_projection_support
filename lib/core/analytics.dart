@@ -1,12 +1,17 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:lukehog/lukehog.dart';
-import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class Analytics {
   static Analytics? _instance;
   late Lukehog _lukehog;
   static const String _userIdKey = 'anonymous_user_id';
   String? _currentUserId;
+  final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+
+  /// Stored device properties to avoid repeated lookups.
+  Map<String, dynamic>? _deviceProperties;
 
   // Private constructor
   Analytics._();
@@ -17,7 +22,10 @@ class Analytics {
     return _instance!;
   }
 
-  // Initialize analytics with API key
+  /// Initializes the Analytics service.
+  ///
+  /// Must be called once before any other methods are used. Fetches and
+  /// stores device information for the session.
   Future<void> initialize(
     String appId, {
     Duration sessionExpiration = const Duration(minutes: 15),
@@ -33,81 +41,94 @@ class Analytics {
       debug: debug,
     );
     await _initializeAnonymousUser();
+    // Fetch and store device info once upon initialization.
+    _deviceProperties = await _getDeviceInfo();
   }
 
-  // Generate and persist anonymous user ID
+  /// Generates and persists an anonymous user ID.
   Future<void> _initializeAnonymousUser() async {
     final prefs = await SharedPreferences.getInstance();
     _currentUserId = prefs.getString(_userIdKey);
 
-    // Generate new ID if doesn't exist
     if (_currentUserId == null) {
       _currentUserId = const Uuid().v4();
       await prefs.setString(_userIdKey, _currentUserId!);
     }
 
-    // Set user ID with LukeHog
     _lukehog.setUserId(_currentUserId);
   }
 
-  // Track a simple event
-  Future<void> trackEvent(String eventName) async {
-    await _lukehog.capture(eventName, properties: {
-      'timestamp': DateTime.now().toIso8601String(),
-      'user_id': _currentUserId,
-    });
+  /// Gathers basic device information for Windows.
+  Future<Map<String, dynamic>> _getDeviceInfo() async {
+    final Map<String, dynamic> deviceData = <String, dynamic>{};
+    try {
+      final info = await _deviceInfoPlugin.windowsInfo;
+      deviceData.addAll({
+        'computer_name': info.computerName,
+        'number_of_cores': info.numberOfCores,
+        'system_memory_in_mb': info.systemMemoryInMegabytes,
+        'product_name': info.productName,
+      });
+    } catch (e) {
+      deviceData['device_info_error'] = e.toString();
+    }
+    return deviceData;
   }
 
-  // Track event with properties
-  Future<void> trackEventWithProperties(
-    String eventName,
-    Map<String, dynamic> properties,
-  ) async {
-    await _lukehog.capture(eventName, properties: {
-      ...properties,
-      'timestamp': DateTime.now().toIso8601String(),
-      'user_id': _currentUserId,
-    });
-  }
-
-  // Track event with custom timestamp
-  Future<void> trackEventWithTimestamp(
-    String eventName,
-    DateTime timestamp, {
+  /// A private helper to capture events with common properties.
+  Future<void> _capture(
+    String eventName, {
     Map<String, dynamic> properties = const {},
+    DateTime? timestamp,
   }) async {
+    final allProperties = {
+      // Use the stored device properties.
+      ...?_deviceProperties,
+      ...properties,
+    };
+
     await _lukehog.capture(
       eventName,
-      properties: properties,
+      properties: allProperties,
       timestamp: timestamp,
     );
   }
 
-  // Track screen views (as regular events)
+  /// Tracks a simple event with a given name.
+  Future<void> trackEvent(String eventName) async {
+    await _capture(eventName);
+  }
+
+  /// Tracks an event with additional custom properties.
+  Future<void> trackEventWithProperties(
+    String eventName,
+    Map<String, dynamic> properties,
+  ) async {
+    await _capture(eventName, properties: properties);
+  }
+
+  /// Tracks a screen view as a 'screen_view' event.
   Future<void> trackScreen(String screenName) async {
-    await _lukehog.capture(
+    await _capture(
       'screen_view',
       properties: {'screen_name': screenName},
     );
   }
 
-  // Get current user ID
+  /// Gets the current user ID.
   String? get userId => _currentUserId;
 
-  // Reset user (generates new anonymous ID)
+  /// Resets the current user and generates a new anonymous one.
   Future<void> reset() async {
-    // Clear user ID in LukeHog (generates new anonymous ID)
     _lukehog.setUserId(null);
 
-    // Remove stored ID
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userIdKey);
 
-    // Generate and set new ID
     await _initializeAnonymousUser();
   }
 
-  // Advanced: Set custom user ID (if you want to switch from anonymous)
+  /// Sets a custom user ID, replacing the anonymous one.
   Future<void> setCustomUserId(String userId) async {
     _currentUserId = userId;
     final prefs = await SharedPreferences.getInstance();

@@ -8,6 +8,7 @@ import 'package:open_dir/open_dir.dart';
 import 'package:vies_projection_support/core/analytics.dart';
 import 'package:vies_projection_support/core/compress_image.dart';
 import 'package:vies_projection_support/core/enums/aspect_ratio_mode.dart';
+import 'package:vies_projection_support/core/local_storage.dart';
 import 'package:vies_projection_support/pages/home_page.dart';
 import 'package:vies_projection_support/shared/button_widget.dart';
 import 'package:vies_projection_support/shared/snackbar.dart';
@@ -27,7 +28,16 @@ class _ImageCompressState extends State<ImageCompress> {
   File? img;
   String? savedImagePath;
   bool isLoading = false;
-  AspectRatioMode _selectedMode = AspectRatioMode.stretch;
+  final localAspectRatioMode = localStore.get('image_compress_aspect_ratio');
+  late AspectRatioMode _selectedMode;
+  @override
+  initState() {
+    super.initState();
+    _selectedMode = AspectRatioMode.values.firstWhere(
+      (mode) => mode.name == localAspectRatioMode,
+      orElse: () => AspectRatioMode.maintain,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +77,7 @@ class _ImageCompressState extends State<ImageCompress> {
               initialSelection: _selectedMode,
               onSelected: (AspectRatioMode? mode) {
                 if (mode != null) {
+                  localStore.setValue('image_compress_aspect_ratio', mode.name);
                   setState(() {
                     _selectedMode = mode;
                   });
