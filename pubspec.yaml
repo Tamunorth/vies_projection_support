@@ -137,6 +137,7 @@ flutter:
 inno_bundle:
   id: f9edf0e0-a1ad-11f0-b560-6b35e4acdc8d
   publisher: Tamunor
+  name: Vies Projection Support
   installer_icon: assets/logo.ico
   uninstaller_icon: assets/logo.ico
   sign_tool: 
