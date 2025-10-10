@@ -48,141 +48,148 @@ class _ImageCompressState extends State<ImageCompress> {
       },
       child: Container(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Drop Image Here',
-              style: Theme.of(context)
-                  .textTheme
-                  .displayMedium
-                  ?.copyWith(color: Colors.white),
-            ),
-            Row(
-              children: [
-                const SizedBox(height: 12),
-              ],
-            ),
-            Text(
-              'Compress images to the right size for YouTube thumbnails',
-              textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.white),
-            ),
-            const SizedBox(height: 24),
-            DropdownMenu<AspectRatioMode>(
-              width: 240,
-              initialSelection: _selectedMode,
-              onSelected: (AspectRatioMode? mode) {
-                if (mode != null) {
-                  localStore.setValue('image_compress_aspect_ratio', mode.name);
-                  setState(() {
-                    _selectedMode = mode;
-                  });
-                }
-              },
-              dropdownMenuEntries: AspectRatioMode.values
-                  .map<DropdownMenuEntry<AspectRatioMode>>(
-                (AspectRatioMode mode) {
-                  return DropdownMenuEntry<AspectRatioMode>(
-                    value: mode,
-                    label: mode.displayName,
-                    style: ButtonStyle(
-                      foregroundColor:
-                          WidgetStateProperty.all<Color>(Colors.white),
-                    ),
-                  );
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 24),
+              Text(
+                'Drop Image Here',
+                style: Theme.of(context)
+                    .textTheme
+                    .displayMedium
+                    ?.copyWith(color: Colors.white),
+              ),
+              Row(
+                children: [
+                  const SizedBox(height: 12),
+                ],
+              ),
+              Text(
+                'Compress images to the right size for YouTube thumbnails',
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 24),
+              DropdownMenu<AspectRatioMode>(
+                width: 240,
+                initialSelection: _selectedMode,
+                onSelected: (AspectRatioMode? mode) {
+                  if (mode != null) {
+                    localStore.setValue(
+                        'image_compress_aspect_ratio', mode.name);
+                    setState(() {
+                      _selectedMode = mode;
+                    });
+                  }
                 },
-              ).toList(),
-              textStyle: const TextStyle(
-                fontSize: 14,
-              ),
-              menuStyle: MenuStyle(
-                backgroundColor: WidgetStateProperty.all<Color?>(accentColor),
-                fixedSize: WidgetStateProperty.all<Size>(
-                  Size.fromWidth(240),
+                dropdownMenuEntries: AspectRatioMode.values
+                    .map<DropdownMenuEntry<AspectRatioMode>>(
+                  (AspectRatioMode mode) {
+                    return DropdownMenuEntry<AspectRatioMode>(
+                      value: mode,
+                      label: mode.displayName,
+                      style: ButtonStyle(
+                        foregroundColor:
+                            WidgetStateProperty.all<Color>(Colors.white),
+                      ),
+                    );
+                  },
+                ).toList(),
+                textStyle: const TextStyle(
+                  fontSize: 14,
                 ),
-                padding: WidgetStateProperty.all<EdgeInsets>(
-                  EdgeInsets.symmetric(vertical: 8.0),
-                ),
-              ),
-              inputDecorationTheme: InputDecorationTheme(
-                filled: true,
-                fillColor: accentColor,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
-                // Defines the border style when the dropdown is not focused.
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4.0),
-                  borderSide:
-                      BorderSide(color: Colors.grey.shade600, width: 1.0),
-                ),
-                // Defines the border style when the dropdown is focused.
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4.0),
-                  borderSide: const BorderSide(color: accentColor, width: 2.0),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (img != null)
-              MouseRegion(
-                cursor: savedImagePath != null
-                    ? SystemMouseCursors.click
-                    : SystemMouseCursors.basic,
-                child: GestureDetector(
-                  onTap: savedImagePath == null
-                      ? null
-                      : () async {
-                          try {
-                            final directoryPath = p.dirname(savedImagePath!);
-                            await OpenDir().openNativeDir(
-                                path: directoryPath,
-                                highlightedFileName:
-                                    p.basename(savedImagePath!));
-                          } catch (e) {
-                            if (mounted) {
-                              CustomNotification.show(
-                                context,
-                                'Could not open file location.',
-                                isSuccess: false,
-                              );
-                            }
-                          }
-                        },
-                  child: Image.file(
-                    img!,
-                    width: 240,
-                    height: 144,
-                    fit: BoxFit.contain,
+                menuStyle: MenuStyle(
+                  backgroundColor: WidgetStateProperty.all<Color?>(accentColor),
+                  fixedSize: WidgetStateProperty.all<Size>(
+                    Size.fromWidth(240),
+                  ),
+                  padding: WidgetStateProperty.all<EdgeInsets>(
+                    EdgeInsets.symmetric(vertical: 8.0),
                   ),
                 ),
-              )
-            else
-              const SizedBox(
-                width: 240,
-                height: 144,
-                child: Image(
+                inputDecorationTheme: InputDecorationTheme(
+                  filled: true,
+                  fillColor: accentColor,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  // Defines the border style when the dropdown is not focused.
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade600, width: 1.0),
+                  ),
+                  // Defines the border style when the dropdown is focused.
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    borderSide:
+                        const BorderSide(color: accentColor, width: 2.0),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (img != null)
+                MouseRegion(
+                  cursor: savedImagePath != null
+                      ? SystemMouseCursors.click
+                      : SystemMouseCursors.basic,
+                  child: GestureDetector(
+                    onTap: savedImagePath == null
+                        ? null
+                        : () async {
+                            try {
+                              final directoryPath = p.dirname(savedImagePath!);
+                              await OpenDir().openNativeDir(
+                                  path: directoryPath,
+                                  highlightedFileName:
+                                      p.basename(savedImagePath!));
+                            } catch (e) {
+                              if (mounted) {
+                                CustomNotification.show(
+                                  context,
+                                  'Could not open file location.',
+                                  isSuccess: false,
+                                );
+                              }
+                            }
+                          },
+                    child: Image.file(
+                      img!,
+                      width: 240,
+                      height: 144,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                )
+              else
+                const SizedBox(
+                  child: Image(
+                    image: AssetImage('assets/image_placeholder.png'),
                     fit: BoxFit.contain,
-                    image: AssetImage('assets/image_placeholder.png')),
+                    width: 240,
+                    height: 240,
+                  ),
+                ),
+              // const SizedBox(height: 24),
+              if (isLoading) ...[
+                const SizedBox(height: 24),
+                const CircularProgressIndicator(
+                  strokeCap: StrokeCap.round,
+                  strokeWidth: 5,
+                  backgroundColor: accentColor,
+                  trackGap: 12,
+                  color: Colors.blue,
+                ),
+                // const SizedBox(height: 12),
+              ],
+              ButtonWidget(
+                title: "Pick Image",
+                onTap: isLoading ? null : _compressImage,
               ),
-            const SizedBox(height: 24),
-            if (isLoading) ...[
-              const CircularProgressIndicator(
-                strokeCap: StrokeCap.round,
-                strokeWidth: 5,
-                backgroundColor: accentColor,
-                trackGap: 12,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 12),
             ],
-            ButtonWidget(
-              title: "Pick Image",
-              onTap: isLoading ? null : _compressImage,
-            ),
-          ],
+          ),
         ),
       ),
     );
