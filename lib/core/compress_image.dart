@@ -47,7 +47,6 @@ Future<File?> compressImageToSize(
   final Map<String, dynamic> compressionParams = {
     'filePath': fileToProcess.path,
     'maxSizeInBytes': maxSizeInBytes,
-    'didUpdateAspectRatio': aspectRatioMode != null,
   };
   final Map<String, dynamic>? result =
       await compute(_compressImage, compressionParams);
@@ -99,7 +98,6 @@ Future<Map<String, dynamic>?> _compressImage(
 ) async {
   final String filePath = params['filePath'];
   final int maxSizeInBytes = params['maxSizeInBytes'];
-  final bool didUpdateAspectRatio = params['didUpdateAspectRatio'] ?? false;
 
   final File imageFile = File(filePath);
   final Uint8List imageBytes = await imageFile.readAsBytes();
@@ -148,9 +146,7 @@ Future<Map<String, dynamic>?> _compressImage(
       };
     }
 
-    resizeFactor *= didUpdateAspectRatio
-        ? 0.65
-        : 0.7; // Reduce by 35% or 25% each iteration
+    resizeFactor *= 0.68; // Reduce by 35% each iteration
 
     final int nextWidth = (originalImage.width * resizeFactor).toInt();
     final int nextHeight =
