@@ -146,7 +146,7 @@ Future<Map<String, dynamic>?> _compressImage(
       };
     }
 
-    resizeFactor *= 0.70; // Reduce by 25% each iteration
+    resizeFactor *= 0.65; // Reduce by 35% each iteration
 
     final int nextWidth = (originalImage.width * resizeFactor).toInt();
     final int nextHeight =
