@@ -115,8 +115,8 @@ Future<Map<String, dynamic>?> _compressImage(
     return null;
   }
 
-  const int minWidth = 1280;
-  const int minHeight = 720;
+  const int minWidth = 1920;
+  const int minHeight = 1080;
   final bool isOriginalPng = filePath.toLowerCase().endsWith('.png');
   img.Image currentImage = originalImage;
   Uint8List? resultBytes;
@@ -146,7 +146,7 @@ Future<Map<String, dynamic>?> _compressImage(
       };
     }
 
-    resizeFactor *= 0.68; // Reduce by 35% each iteration
+    resizeFactor *= 0.9; // Reduce by 35% each iteration
 
     final int nextWidth = (originalImage.width * resizeFactor).toInt();
     final int nextHeight =
@@ -167,8 +167,8 @@ Future<Map<String, dynamic>?> _compressImage(
 
   // --- Phase 2: Convert to JPG and Reduce Quality ---
   log('Reached minimum size. Starting JPG quality reduction.');
-  int quality = 95;
-  const int qualityStep = 5;
+  int quality = 98;
+  const int qualityStep = 2;
 
   while (quality > 5) {
     resultBytes = img.encodeJpg(currentImage, quality: quality);

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:process_run/process_run.dart';
 import 'package:vies_projection_support/core/block_input.dart';
+import 'package:vies_projection_support/core/easyworship_handler.dart';
 import 'package:vies_projection_support/core/local_storage.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:vies_projection_support/shared/snackbar.dart';
@@ -25,14 +26,14 @@ Future<void> loadScreenDimensions() async {
 
 class EasyUtils {
   final automation = EasyWorshipAutomation();
+  final EasyWorshipHandler easyWorshipHandler = EasyWorshipHandler();
 
   Future<void> createSongFile() async {
     final duration = localStore.get('duration');
     final delayDuration = duration == null
         ? Duration(milliseconds: 300)
         : Duration(milliseconds: int.parse(duration));
-    await Shell().run(
-        'start "" "C:\\Program Files (x86)\\Softouch\\EasyWorship 7\\EasyWorship.exe"');
+    await easyWorshipHandler.openEasyWorship();
 
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
 

@@ -28,7 +28,7 @@ class Analytics {
   /// stores device information for the session.
   Future<void> initialize(
     String appId, {
-    Duration sessionExpiration = const Duration(minutes: 15),
+    Duration sessionExpiration = const Duration(minutes: 45),
     String baseUrl = 'https://api.lukehog.com',
     LukehogServerType serverType = LukehogServerType.lukehog,
     bool debug = false,
@@ -87,11 +87,13 @@ class Analytics {
       ...properties,
     };
 
-    await _lukehog.capture(
-      eventName,
-      properties: allProperties,
-      timestamp: timestamp,
-    );
+    try {
+      await _lukehog.capture(
+        eventName,
+        properties: allProperties,
+        timestamp: timestamp,
+      );
+    } catch (e) {}
   }
 
   /// Tracks a simple event with a given name.
