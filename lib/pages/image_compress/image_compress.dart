@@ -35,7 +35,7 @@ class _ImageCompressState extends State<ImageCompress> {
     super.initState();
     _selectedMode = AspectRatioMode.values.firstWhere(
       (mode) => mode.name == localAspectRatioMode,
-      orElse: () => AspectRatioMode.maintain,
+      orElse: () => AspectRatioMode.maintainDimensions,
     );
   }
 
@@ -220,8 +220,7 @@ class _ImageCompressState extends State<ImageCompress> {
       final compressedFile = await compressImageToSize(
         fileImage,
         maxSizeInBytes,
-        aspectRatioMode:
-            _selectedMode == AspectRatioMode.maintain ? null : _selectedMode,
+        aspectRatioMode: _selectedMode,
       );
       if (compressedFile == null) {
         throw Exception("Compression returned a null file.");
