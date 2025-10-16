@@ -11,6 +11,19 @@ import 'package:vies_projection_support/core/enums/aspect_ratio_mode.dart';
 
 /// Compresses an image file to be under the specified maximum size in bytes.
 ///
+/// Compresses an image file to be under the specified maximum size in bytes.
+///
+/// If an [aspectRatioMode] is provided and is not
+/// [AspectRatioMode.maintainDimensions], the image will first be processed
+/// to fit a 16:9 aspect ratio. Otherwise, this step is skipped, and the
+/// image is compressed with its original dimensions.
+///
+/// [imageFile] The original image file.
+/// [maxSizeInBytes] The target maximum size for the compressed image.
+/// [aspectRatioMode] The mode to handle the image's aspect ratio.
+///   - `centerCrop`: Crops the image to 16:9.
+///   - `stretch`: Stretches the image to 16:9.
+///   - `maintainDimensions`: Skips aspect ratio changes and resizing.
 Future<File?> compressImageToSize(
   File imageFile,
   int maxSizeInBytes, {
@@ -20,18 +33,17 @@ Future<File?> compressImageToSize(
   File fileToProcess = imageFile;
 
   // --- Step 1 (Isolate): Enforce Aspect Ratio ---
-  if (aspectRatioMode != null) {
+  if (aspectRatioMode != null &&
+      aspectRatioMode != AspectRatioMode.maintainDimensions) {
     log('Starting aspect ratio enforcement: ${aspectRatioMode.name}');
     final Map<String, dynamic> aspectRatioParams = {
       'filePath': imageFile.path,
       'mode': aspectRatioMode.index,
     };
 
-    // Isolate now returns raw image data (bytes), not a file path
     final Map<String, dynamic>? result =
         await compute(_enforceAspectRatio, aspectRatioParams);
 
-    // If the image was changed, save the new bytes to a temporary file
     if (result != null && result['bytes'] != null) {
       final Directory tempDir = await getTemporaryDirectory();
       final String extension = result['extension'];
@@ -47,6 +59,7 @@ Future<File?> compressImageToSize(
   final Map<String, dynamic> compressionParams = {
     'filePath': fileToProcess.path,
     'maxSizeInBytes': maxSizeInBytes,
+    'maintainDimensions': aspectRatioMode == AspectRatioMode.maintainDimensions,
   };
   final Map<String, dynamic>? result =
       await compute(_compressImage, compressionParams);
@@ -83,21 +96,24 @@ Future<File?> compressImageToSize(
   return compressedFile;
 }
 
-/// Compresses an image by iteratively resizing it by 20% until it reaches
-/// minimum dimensions, then converting to JPG and reducing quality.
+/// Compresses an image by iteratively resizing it (unless dimensions are
+/// maintained), then converting to JPG and reducing quality if necessary.
 ///
 /// This function provides detailed logs to track the compression process.
-/// It first attempts to meet the size constraints by resizing alone. If that
-/// fails, it switches to a more aggressive JPG quality reduction phase.
+/// It first attempts to meet the size constraints by resizing. If that
+/// fails, or if resizing is skipped, it switches to a more aggressive
+/// JPG quality reduction phase.
 ///
 /// [params] A map containing:
 /// - 'filePath': The path to the image file to compress.
 /// - 'maxSizeInBytes': The target maximum file size in bytes.
+/// - 'maintainDimensions': A boolean to prevent image resizing.
 Future<Map<String, dynamic>?> _compressImage(
   Map<String, dynamic> params,
 ) async {
   final String filePath = params['filePath'];
   final int maxSizeInBytes = params['maxSizeInBytes'];
+  final bool maintainDimensions = params['maintainDimensions'] ?? false;
 
   final File imageFile = File(filePath);
   final Uint8List imageBytes = await imageFile.readAsBytes();
@@ -115,8 +131,8 @@ Future<Map<String, dynamic>?> _compressImage(
     return null;
   }
 
-  const int minWidth = 1280;
-  const int minHeight = 720;
+  const int minWidth = 1920;
+  const int minHeight = 1080;
   final bool isOriginalPng = filePath.toLowerCase().endsWith('.png');
   img.Image currentImage = originalImage;
   Uint8List? resultBytes;
@@ -126,48 +142,51 @@ Future<Map<String, dynamic>?> _compressImage(
       'size: ${imageBytes.length} bytes');
 
   // --- Phase 1: Iterative Resizing by 20% ---
-  double resizeFactor = 1.0;
-  while (true) {
-    // Check size at the current dimension
-    if (isOriginalPng) {
-      resultBytes = img.encodePng(currentImage);
-    } else {
-      resultBytes = img.encodeJpg(currentImage, quality: 95);
+  if (!maintainDimensions) {
+    double resizeFactor = 1.0;
+    while (true) {
+      if (isOriginalPng) {
+        resultBytes = img.encodePng(currentImage);
+      } else {
+        resultBytes = img.encodeJpg(currentImage, quality: 95);
+      }
+
+      log('Current dims: ${currentImage.width}x${currentImage.height}, '
+          'size: ${resultBytes.length} bytes');
+
+      if (resultBytes.length <= maxSizeInBytes) {
+        log('Image is now under the size limit. Success!');
+        return {
+          'bytes': resultBytes,
+          'extension': isOriginalPng ? 'png' : 'jpg',
+        };
+      }
+
+      resizeFactor *= 0.9;
+
+      final int nextWidth = (originalImage.width * resizeFactor).toInt();
+      final int nextHeight =
+          (originalImage.height * (nextWidth / originalImage.width)).toInt();
+
+      if (nextWidth < minWidth || nextHeight < minHeight) {
+        log('Next resize would go below minimums. Stopping resize loop.');
+        break;
+      }
+
+      log('Resizing to ${nextWidth}x${nextHeight}...');
+      currentImage = img.copyResize(
+        originalImage,
+        width: nextWidth,
+        maintainAspect: true,
+      );
     }
-
-    log('Current dims: ${currentImage.width}x${currentImage.height}, '
-        'size: ${resultBytes.length} bytes');
-
-    if (resultBytes.length <= maxSizeInBytes) {
-      log('Image is now under the size limit. Success!');
-      return {
-        'bytes': resultBytes,
-        'extension': isOriginalPng ? 'png' : 'jpg',
-      };
-    }
-
-    resizeFactor *= 0.68; // Reduce by 35% each iteration
-
-    final int nextWidth = (originalImage.width * resizeFactor).toInt();
-    final int nextHeight =
-        (originalImage.height * (nextWidth / originalImage.width)).toInt();
-
-    if (nextWidth < minWidth || nextHeight < minHeight) {
-      log('Next resize would go below minimums. Stopping resize loop.');
-      break;
-    }
-
-    log('Resizing to ${nextWidth}x${nextHeight}...');
-    currentImage = img.copyResize(
-      originalImage, // Always resize from original for best quality
-      width: nextWidth,
-      maintainAspect: true,
-    );
   }
 
   // --- Phase 2: Convert to JPG and Reduce Quality ---
-  log('Reached minimum size. Starting JPG quality reduction.');
-  int quality = 95;
+  log(maintainDimensions
+      ? 'Maintaining dimensions. Starting JPG quality reduction.'
+      : 'Reached minimum size. Starting JPG quality reduction.');
+  int quality = 98;
   const int qualityStep = 5;
 
   while (quality > 5) {
@@ -183,7 +202,7 @@ Future<Map<String, dynamic>?> _compressImage(
 
   log('Could not get under size limit. Returning best effort.');
   return {
-    'bytes': resultBytes, // This will be the smallest version
+    'bytes': resultBytes,
     'extension': 'jpg',
   };
 }

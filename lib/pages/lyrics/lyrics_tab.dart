@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lukehog/lukehog.dart';
+import 'package:vies_projection_support/core/easyworship_handler.dart';
 import 'package:vies_projection_support/pages/lyrics/lyrics_notifier.dart';
 import 'package:vies_projection_support/pages/lyrics/lyrics_textfield.dart';
 import 'package:vies_projection_support/core/local_storage.dart';
